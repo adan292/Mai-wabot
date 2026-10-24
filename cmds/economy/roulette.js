@@ -1,12 +1,20 @@
 import db from "#db"
-
 const msToTime = (duration) => {
   const seconds = Math.floor((duration / 1000) % 60)
   const minutes = Math.floor((duration / (1000 * 60)) % 60)
-
   const pad = (n) => n.toString().padStart(2, '0')
   if (minutes === 0) return `${pad(seconds)} segundo${seconds !== 1 ? 's' : ''}`
   return `${pad(minutes)} minuto${minutes !== 1 ? 's' : ''}, ${pad(seconds)} segundo${seconds !== 1 ? 's' : ''}`
+}
+
+const weightedRandom = (colors, weights) => {
+  const total = weights.reduce((a, b) => a + b, 0)
+  const rand = Math.random() * total
+  let sum = 0
+  for (let i = 0; i < colors.length; i++) {
+    sum += weights[i]
+    if (rand <= sum) return colors[i]
+  }
 }
 
 export default {
@@ -16,69 +24,68 @@ export default {
     const chatId = msg.chat
     const senderId = msg.sender
     const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net'
-    
-    // Obtener configuración del bot y del chat
     const botSettings = await db.getSettings(botId)
-    const chatData = await db.getChat(chatId)
+    const chatData = await db.getChat(msg.chat)
 
     if (chatData.adminonly || !chatData.rpg)
       return msg.reply(mess.comandooff)
 
-    const user = await db.getChatUser(chatId, senderId)
+    const user = await db.getChatUser(msg.chat, msg.sender)
     const cooldown = 5 * 60 * 1000
     const now = Date.now()
     const remaining = (user.rtCooldown || 0) - now
     const currency = botSettings.currency || 'Monedas'
 
     if (remaining > 0)
-      return msg.reply(`🌱 Debes esperar *${msToTime(remaining)}* antes de apostar nuevamente.`)
+      return msg.reply(`《✧》 Debes esperar *${msToTime(remaining)}* antes de apostar nuevamente.`)
 
     if (args.length !== 2)
-      return msg.reply(`🌾 Debes ingresar una cantidad de ${currency} y apostar a un color.`)
+      return msg.reply(`《✧》 Debes ingresar una cantidad de ${currency} y apostar a un color.`)
 
     const amount = parseInt(args[0])
     const color = args[1].toLowerCase()
     const validColors = ['red', 'black', 'green']
 
     if (isNaN(amount) || amount < 200)
-      return msg.reply(`🌾 La cantidad mínima de ${currency} a apostar es 200.`)
+      return msg.reply(`《✧》 La cantidad mínima de ${currency} a apostar es 200.`)
 
     if (!validColors.includes(color))
-      return msg.reply(`🍒 Por favor, elige un color válido: red, black, green.`)
+      return msg.reply(`✎ Por favor, elige un color válido: ${validColors.join(', ')}.`)
 
     if (user.coins < amount)
-      return msg.reply(`🍒 No tienes suficientes *${currency}* para hacer esta apuesta.`)
+      return msg.reply(`✎ No tienes suficientes *${currency}* para hacer esta apuesta.`)
 
-    // Actualizar cooldown
     user.rtCooldown = now + cooldown
-    await db.updateChatUser(chatId, senderId, 'rtCooldown', user.rtCooldown)
+    await db.updateChatUser(msg.chat, msg.sender, 'rtCooldown', user.rtCooldown)
 
-    const resultColor = validColors[Math.floor(Math.random() * validColors.length)]
+    const colorSettings = {
+      red:    { weight: 45 },
+      black:  { weight: 40 },
+      green:  { weight: 38 }
+    }
+
+    const weights = validColors.map(c => colorSettings[c].weight)
+    const resultColor = weightedRandom(validColors, weights)
 
     if (resultColor === color) {
-      const reward = amount * (resultColor === 'green' ? 14 : 2)
+      const multiplier = Math.floor(Math.random() * 2) + 2
+      const reward = amount * multiplier
       user.coins += reward
-      await db.updateChatUser(chatId, senderId, 'coins', user.coins)
-      
-      await sock.sendMessage(
+      await db.updateChatUser(msg.chat, msg.sender, 'coins', user.coins)
+      await sock.reply(
         chatId,
-        { 
-          text: `🌱 La ruleta salió en *${resultColor}* y has ganado *¥${reward.toLocaleString()} ${currency}*.`,
-          mentions: [senderId]
-        },
-        { quoted: msg }
+        `ꕥ La ruleta salió en *${resultColor}* y has ganado *¥${reward.toLocaleString()} ${currency}*.`,
+        msg,
+        { mentions: [senderId] }
       )
     } else {
       user.coins -= amount
-      await db.updateChatUser(chatId, senderId, 'coins', user.coins)
-      
-      await sock.sendMessage(
+      await db.updateChatUser(msg.chat, msg.sender, 'coins', user.coins)
+      await sock.reply(
         chatId,
-        { 
-          text: `🌱 La ruleta salió en *${resultColor}* y has perdido *¥${amount.toLocaleString()} ${currency}*.`,
-          mentions: [senderId]
-        },
-        { quoted: msg }
+        `✎ La ruleta salió en *${resultColor}* y has perdido *¥${amount.toLocaleString()} ${currency}*.`,
+        msg,
+        { mentions: [senderId] }
       )
     }
   },

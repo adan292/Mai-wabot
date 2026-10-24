@@ -1,6 +1,6 @@
 import db from "#db"
 export default {
-  command: ['demote', 'sacarpija'],
+  command: ['demote'],
   category: 'grupo',
   isAdmin: true,
   botAdmin: true,

@@ -1,6 +1,6 @@
 import db from "#db"
 export default {
-  command: ['promote', 'darpija', 'meterpija'],
+  command: ['promote'],
   category: 'grupo',
   isAdmin: true,
   botAdmin: true,
