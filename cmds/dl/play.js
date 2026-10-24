@@ -1,4 +1,3 @@
-import config from "../config.js"
 import ytsearch from "yt-search"
 import { getBuffer } from "#serialize"
 import fetch from "node-fetch"
