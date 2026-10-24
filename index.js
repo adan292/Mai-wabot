@@ -38,8 +38,8 @@ function normalizePhone(input) {
 
 console.log(chalk.blue.bold('\n INICIANDO SISTEMA ...'))
 console.log(chalk.cyan(`
-      Stellar | Wa Bot
-     Powered by I'm Diego ~
+      Mai | Wa Bot
+     Powered by I'm Adán ~
 `))
 
 const BOT_TYPES = [
