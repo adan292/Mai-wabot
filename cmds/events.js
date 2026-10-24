@@ -110,7 +110,7 @@ export default async (sock, msg) => {
                   'canonical-url': botSettings.link,
                   'matched-text': botSettings.link,
                   title: `${botSettings.namebot} | ${metadata.subject}`,
-                  description: `${botSettings.namebot2 || 'Stellar Bot'}, Built With 🤍 By Stellar`,
+                  description: `${botSettings.namebot2 || 'Mai wabot'}, Built With 🤍 By adánzx7`,
                   jpegThumbnail: imageMessage?.jpegThumbnail ? Buffer.from(imageMessage.jpegThumbnail) : undefined,
                   highQualityThumbnail: imageMessage || undefined
                 }))
@@ -172,7 +172,7 @@ export default async (sock, msg) => {
                   'canonical-url': botSettings.link,
                   'matched-text': botSettings.link,
                   title: `${botSettings.namebot} | ${metadata.subject}`,
-                  description: `${botSettings.namebot2 || 'Stellar Bot'}, Built With 🤍 By Stellar`,
+                  description: `${botSettings.namebot2 || 'mai waBot'}, Built With 🤍 By adánzx7`,
                   jpegThumbnail: imageMessage?.jpegThumbnail ? Buffer.from(imageMessage.jpegThumbnail) : undefined,
                   highQualityThumbnail: imageMessage || undefined
                 }))
