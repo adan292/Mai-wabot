@@ -3,8 +3,8 @@ import { getBuffer } from "#serialize"
 import fetch from "node-fetch"
 
 // Configura aquí las credenciales de tu API externa si no las tienes globales
-const API_URL = "TU_URL_DE_LA_API" 
-const API_KEY = "TU_KEY_DE_LA_API"
+const API_URL = "https://api.alyacore.xyz" 
+const API_KEY = "Miku_michi"
 
 export default {
   command: ["play", "mp3", "ytmp3", "ytaudio", "playaudio"],
