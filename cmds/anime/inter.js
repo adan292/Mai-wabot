@@ -1,6 +1,15 @@
 import db from "#db"
 import fetch from 'node-fetch';
 
+// ==========================================
+// CONFIGURACIÓN DE LA API Y MENSAJES GLOBAL
+// ==========================================
+const api = {
+  url: 'https://api.alyacore.xyz', 
+  key: 'Miku_michi'              
+};
+const msgglobal = '❌ Ocurrió un error al procesar el comando. Inténtalo de nuevo.';
+
 const captions = {
   peek: (from, to, genero) =>
     from === to ? 'está espiando detrás de una puerta por diversión.' : `está espiando a`,
@@ -159,234 +168,119 @@ const captions = {
     from === to ? 'se picó a sí mismo por curiosidad.' : 'le dio un toquecito con el dedo a',
   lewd: (from, to) =>
     from === to ? 'tuvo un pensamiento nada santo.' : 'le lanzó una mirada nada santa a',
-  kisshead: (from, to) =>
-    from === to ? 'se dio un beso en su propia cabeza.' : 'le dio un beso en la cabeza a',
-  kicked: (from, to) =>
-    from === to ? 'se pateó a sí mismo por accidente.' : 'le dio una patada a',
-  facepalm: (from, to) =>
-    from === to ? 'se hizo facepalm por su propio error.' : 'le hizo facepalm por lo que hizo',
-  cook: (from, to) =>
-    from === to ? 'está cocinando algo rico.' : 'está cocinando junto a',
+Usa el código con precaución.
+kisshead: (from, to) =>
+from === to ? 'se dio un beso en su propia cabeza.' : 'le dio un beso en la cabeza a',
+kicked: (from, to) =>
+from === to ? 'se pateó a sí mismo por accidente.' : 'le dio una patada a',
+facepalm: (from, to) =>
+from === to ? 'se hizo facepalm por su propio error.' : 'le hizo facepalm por lo que hizo',
+cook: (from, to) =>
+from === to ? 'está cocinando algo rico.' : 'está cocinando junto a',
 }
-
 const symbols = [
-  '(⁠◠⁠‿⁠◕⁠)',
-  '˃͈◡˂͈',
-  '૮(˶ᵔᵕᵔ˶)ა',
-  '(づ｡◕‿‿◕｡)づ',
-  '(✿◡‿◡)',
-  '(꒪⌓꒪)',
-  '(✿✪‿✪｡)',
-  '(*≧ω≦)',
-  '(✧ω◕)',
-  '˃ 𖥦 ˂',
-  '(⌒‿⌒)',
-  '(¬‿¬)',
-  '(✧ω✧)',
-  '✿(◕ ‿◕)✿',
-  'ʕ•́ᴥ•̀ʔっ',
-  '(ㅇㅅㅇ❀)',
-  '(∩︵∩)',
-  '(✪ω✪)',
-  '(✯◕‿◕✯)',
-  '(•̀ᴗ•́)و ̑̑',
+'(⁠◠⁠‿⁠◕⁠)', '˃͈◡˂͈', '૮(˶ᵔᵕᵔ˶)ა', '(づ｡◕‿‿◕｡)づ', '(✿◡‿◡)',
+'(꒪⌓꒪)', '(✿✪‿✪｡)', '(*≧ω≦)', '(✧ω◕)', '˃ 𖥦 ˂',
+'(⌒‿⌒)', '(¬‿¬)', '(✧ω✧)', '✿(◕ ‿◕)✿', 'ʕ•́ᴥ•̀ʔっ',
+'(ㅇㅅㅇ❀)', '(∩︵∩)', '(✪ω✪)', '(✯◕‿◕✯)', '(•̀ᴗ•́)و ̑̑',
 ]
-
 function getRandomSymbol() {
-  return symbols[Math.floor(Math.random() * symbols.length)]
+return symbols[Math.floor(Math.random() * symbols.length)]
 }
-
 const commandAliases = {
-  muak: 'kiss',
-  beso: 'kisscheek',
-  cafe: 'coffee',
-  aburrido: 'bored',
-  drama: 'dramatic',
-  preg: 'impregnate',
-  timido: 'shy',
-  correr: 'run',
-  triste: 'sad',
-  amor: 'love',
-  fumar: 'smoke',
-  escupir: 'spit',
-  pisar: 'step',
-  comer: 'eat',
-  nom: 'eat',
-  feliz: 'happy',
-  bostezo: 'yawn',
-  hablar: 'talk',
-  estudiar: 'study',
-  estornudar: 'sneeze',
-  enfermo: 'sick',
-  restregar: 'scrub',
-  psicopata: 'psycho',
-  picar: 'poke',
-  lascivo: 'lewd',
-  cabezabeso: 'kisshead',
-  pateado: 'kicked',
-  facepalm: 'facepalm',
-  cocinar: 'cook',
+muak: 'kiss',
+beso: 'kisscheek',
+cafe: 'coffee',
+aburrido: 'bored',
+drama: 'dramatic',
+preg: 'impregnate',
+timido: 'shy',
+correr: 'run',
+triste: 'sad',
+amor: 'love',
+fumar: 'smoke',
+escupir: 'spit',
+pisar: 'step',
+comer: 'eat',
+nom: 'eat',
+feliz: 'happy',
+bostezo: 'yawn',
+hablar: 'talk',
+estudiar: 'study',
+estornudar: 'sneeze',
+enfermo: 'sick',
+restregar: 'scrub',
+psicopata: 'psycho',
+picar: 'poke',
+lascivo: 'lewd',
+cabezabeso: 'kisshead',
+pateado: 'kicked',
+facepalm: 'facepalm',
+cocinar: 'cook',
+morder: 'bite',
 }
-
 export default {
-  command: [
-    'angry',
-    'bleh',
-    'bored',
-    'aburrido',
-    'beso',
-    'clap',
-    'coffee',
-    'cafe',
-    'dramatic',
-    'drama',
-    'drunk',
-    'impregnate',
-    'preg',
-    'kisscheek',
-    'laugh',
-    'love',
-    'amor',
-    'pout',
-    'punch',
-    'run',
-    'correr',
-    'sad',
-    'triste',
-    'scared',
-    'seduce',
-    'shy',
-    'timido',
-    'sleep',
-    'smoke',
-    'fumar',
-    'spit',
-    'escupir',
-    'step',
-    'pisar',
-    'think',
-    'walk',
-    'hug',
-    'kill',
-    'eat',
-    'nom',
-    'comer',
-    'kiss',
-    'muak',
-    'wink',
-    'pat',
-    'happy',
-    'bully',
-    'bite',
-    'morder',
-    'blush',
-    'wave',
-    'bath',
-    'smug',
-    'smile',
-    'highfive',
-    'handhold',
-    'cringe',
-    'bonk',
-    'cry',
-    'lick',
-    'slap',
-    'dance',
-    'love',
-    'amor',
-    'cuddle',
-    'cold',
-    'sing',
-    'tickle',
-    'scream',
-    'push',
-    'nope',
-    'jump',
-    'heat',
-    'gaming',
-    'draw',
-    'call',
-    'feliz',
-    'snuggle',
-    'blowkiss',
-    'trip',
-    'stare',
-    'sniff',
-    'curious',
-    'thinkhard',
-    'comfort',
-    'peek',
-    'yawn',
-    'bostezo',
-    'talk',
-    'hablar',
-    'study',
-    'estudiar',
-    'sneeze',
-    'estornudar',
-    'sick',
-    'enfermo',
-    'scrub',
-    'restregar',
-    'psycho',
-    'psicopata',
-    'poke',
-    'picar',
-    'lewd',
-    'lascivo',
-    'kisshead',
-    'cabezabeso',
-    'kicked',
-    'pateado',
-    'facepalm',
-    'cook',
-    'cocinar',
-  ],
-  category: 'anime',
-  run: async ({ msg, sock, args, command, text, usedPrefix: prefix }) => {
-    const currentCommand = commandAliases[command] || command
-    if (!captions[currentCommand]) return
-
-    let who
-    const texto = msg.mentionedJid
-    if (msg.isGroup) {
-      who = texto.length > 0 ? texto[0] : msg.quoted ? msg.quoted.sender : msg.sender
-    } else {
-      who = msg.quoted ? msg.quoted.sender : msg.sender
-    }
-
-    const user = await db.getUser(who)
-    const fromName = msg.pushName || 'Alguien'
-    const toName = user.name || 'alguien'
-
-    const usr = await db.getUser(msg.sender)
-    const genero = usr.genre || 'Oculto'
-
-    const captionText = captions[currentCommand](fromName, toName, genero)
-    const caption =
-      who !== msg.sender
-        ? `@${msg.sender.split('@')[0]} ${captionText} @${who.split('@')[0]} ${getRandomSymbol()}.`
-        : `${fromName} ${captionText} ${getRandomSymbol()}.`
-
-    try {
-      const response = await fetch(
-        `${api.url}/sfw/interaction?inter=${currentCommand}&key=${api.key}`
-      )
-
-      const videoBuffer = await response.buffer()
-
-      await sock.sendMessage(
-        msg.chat,
-        {
-          video: videoBuffer,
-          gifPlayback: true,
-          caption,
-          mentions: [who, msg.sender],
-        },
-        { quoted: msg },
-      )
-    } catch {
-      await msg.reply(msgglobal)
-    }
-  },
+command: [
+'angry', 'bleh', 'bored', 'aburrido', 'beso', 'clap', 'coffee', 'cafe',
+'dramatic', 'drama', 'drunk', 'impregnate', 'preg', 'kisscheek', 'laugh',
+'love', 'amor', 'pout', 'punch', 'run', 'correr', 'sad', 'triste', 'scared',
+'seduce', 'shy', 'timido', 'sleep', 'smoke', 'fumar', 'spit', 'escupir',
+'step', 'pisar', 'think', 'walk', 'hug', 'kill', 'eat', 'nom', 'comer',
+'kiss', 'muak', 'wink', 'pat', 'happy', 'bully', 'bite', 'morder', 'blush',
+'wave', 'bath', 'smug', 'smile', 'highfive', 'handhold', 'cringe', 'bonk',
+'cry', 'lick', 'slap', 'dance', 'cuddle', 'cold', 'sing', 'tickle',
+'scream', 'push', 'nope', 'jump', 'heat', 'gaming', 'draw', 'call',
+'feliz', 'snuggle', 'blowkiss', 'trip', 'stare', 'sniff', 'curious',
+'thinkhard', 'comfort', 'peek', 'yawn', 'bostezo', 'talk', 'hablar',
+'study', 'estudiar', 'sneeze', 'estornudar', 'sick', 'enfermo', 'scrub',
+'restregar', 'psycho', 'psicopata', 'poke', 'picar', 'lewd', 'lascivo',
+'kisshead', 'cabezabeso', 'kicked', 'pateado', 'facepalm', 'cook', 'cocinar',
+],
+category: 'anime',
+run: async ({ msg, sock, args, command, text, usedPrefix: prefix }) => {
+const currentCommand = commandAliases[command] || command
+if (!captions[currentCommand]) return
+let who
+const texto = msg.mentionedJid || []
+if (msg.isGroup) {
+who = texto.length > 0 ? texto[0] : msg.quoted ? msg.quoted.sender : msg.sender
+} else {
+who = msg.quoted ? msg.quoted.sender : msg.sender
+}
+try {
+const user = await db.getUser(who)
+const fromName = msg.pushName || 'Alguien'
+const toName = user?.name || 'alguien'
+const usr = await db.getUser(msg.sender)
+const genero = usr?.genre || 'Oculto'
+const captionText = captions[currentCommand](fromName, toName, genero)
+const userTag = msg.sender.split('@')[0]
+const targetTag = who.split('@')[0]
+const caption = who !== msg.sender
+? @${userTag} ${captionText} @${targetTag} ${getRandomSymbol()}.
+: ${fromName} ${captionText} ${getRandomSymbol()}.
+const response = await fetch(
+${api.url}/sfw/interaction?inter=${currentCommand}&key=${api.key}
+)
+if (!response.ok) throw new Error('Fallo al obtener respuesta de la API');
+const videoBuffer = await response.buffer()
+await sock.sendMessage(
+msg.chat,
+{
+video: videoBuffer,
+gifPlayback: true,
+caption,
+mentions: [who, msg.sender],
+},
+{ quoted: msg }
+)
+} catch (error) {
+console.error(error)
+if (typeof msg.reply === 'function') {
+await msg.reply(msgglobal)
+} else {
+await sock.sendMessage(msg.chat, { text: msgglobal }, { quoted: msg })
+}
+}
+},
 }
