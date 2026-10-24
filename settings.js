@@ -11,7 +11,7 @@ Para acceder a la API en otro host, debes crear una cuenta en api.stellarwa.xyz 
 
 global.api = {
   url: 'https://api.alyacore.xyz',
-  key: 'Miku_michi' 
+  key: 'Bunny_girl_bot' 
 }
 
 global.msgglobal = '《✧》 Se encontró un error en este comando, intenta mas tarde.\n> ✿ Si el error persiste, reportalo con el comando *#report*.'
