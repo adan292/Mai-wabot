@@ -10,8 +10,8 @@ Si intentas usarla en otros hosts, no funcionará.
 Para acceder a la API en otro host, debes crear una cuenta en api.stellarwa.xyz y adquirir un plan Premium. */
 
 global.api = {
-  url: 'https://api.alyacore.xyz',
-  key: 'Bunny_girl_bot' 
+  url: 'https://api.stellarwa.xyz',
+  key: 'NekoWare@Stellar' 
 }
 
 global.msgglobal = '《✧》 Se encontró un error en este comando, intenta mas tarde.\n> ✿ Si el error persiste, reportalo con el comando *#report*.'
