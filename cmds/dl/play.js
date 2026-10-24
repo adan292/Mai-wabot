@@ -1,10 +1,9 @@
+import config from "../config.js"
 import ytsearch from "yt-search"
 import { getBuffer } from "#serialize"
 import fetch from "node-fetch"
-
-// Configura aquí las credenciales de tu API externa si no las tienes globales
-const API_URL = "https://api.alyacore.xyz" 
-const API_KEY = "Miku_michi"
+// ⚠️ Asegúrate de importar tu configuración donde guardas la URL y KEY de la API
+// Ejemplo: import config from "../config.js" 
 
 export default {
   command: ["play", "mp3", "ytmp3", "ytaudio", "playaudio"],
@@ -13,7 +12,7 @@ export default {
 
     try {
       if (!args[0]) {
-        return msg.reply("《✧》Por favor, menciona el nombre o URL del video que deseas descargar")
+        return msg.reply("《✧》Por favor, menciona el nombre o URL del video que deseas descargar.")
       }
 
       const text = args.join(" ")
@@ -27,12 +26,12 @@ export default {
       const vistas = (views || 0).toLocaleString()
       const canal = author?.name || author || "Desconocido"
       
-      // Intentar obtener la miniatura, si falla, continúa sin romper el comando
-      let thumbBuffer
+      // Intentar obtener la miniatura de forma segura
+      let thumbBuffer;
       try {
         thumbBuffer = await getBuffer(image)
       } catch {
-        thumbBuffer = null
+        thumbBuffer = null // Si falla la imagen, que no rompa el comando
       }
 
       const caption = `【　✿　】 _\`୨୧  Download\` ───── *${title}*_
@@ -44,18 +43,21 @@ export default {
 
 > _──  ִ    ۟  *¡Enviando audio, por favor espera!*_`
 
-      // Si hay miniatura envía imagen, si no, envía solo el texto para evitar caídas
+      // Si hay miniatura se envía, si no, se envía solo el texto
       if (thumbBuffer) {
         await sock.sendMessage(msg.chat, { image: thumbBuffer, caption }, { quoted: msg })
       } else {
         await msg.reply(caption)
       }
 
-      // Corrección de las variables de la API
-      const dlEndpoint = `${API_URL}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${API_KEY}`
+      // ⚠️ REEMPLAZA 'global.api' por la ruta real de tu objeto de APIs configurado
+      const apiUrl = global.api?.url || "https://tu-api.com"
+      const apiKey = global.api?.key || "tu_key"
+
+      const dlEndpoint = `${apiUrl}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${apiKey}`
       const resDl = await fetch(dlEndpoint).then(r => r.json())
       
-      if (!resDl?.status || !resDl?.data?.dl) {
+      if (!resDl?.status || !resDl.data?.dl) {
         return msg.reply("《✧》 No se pudo descargar el *audio*, intenta más tarde.")
       }
 
@@ -64,15 +66,15 @@ export default {
       const mensaje = {
         audio: audioBuffer,
         mimetype: 'audio/mpeg',
-        fileName: `${title}.mp3`,
-        ptt: false // Cambiado a false si quieres que se envíe como música, true si quieres que parezca nota de voz
+        fileName: resDl.data.fileName || `${title}.mp3`
       }
 
       await sock.sendMessage(msg.chat, mensaje, { quoted: msg })
     } catch (e) {
-      console.error(e) // Imprime el error real en la consola para que puedas auditarlo
-      await msg.reply("《✧》 Ocurrió un error inesperado al procesar el comando.")
+      console.error(e) // Es buena práctica imprimir el error en consola para debuguear
+      // Reemplazado 'msgglobal' por un string directo para evitar fallos de referencia
+      await msg.reply(`⚠️ Ocurrió un error inesperado: ${e.message || e}`)
     }
   }
-      }
-      
+          }
+    
