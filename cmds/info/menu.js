@@ -38,7 +38,7 @@ export default {
         owner
           ? !isNaN(owner.replace(/@s\.whatsapp\.net$/, ''))
             ? `${own.name}`
-            : adánzx7 
+            : owner 
           : 'Adanzx7'
       }
 
