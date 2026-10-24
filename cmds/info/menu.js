@@ -11,7 +11,7 @@ export default {
       const botSettings = await db.getSettings(botId);
       const botname = botSettings.namebot || 'Mai';
       const botname2 = botSettings.namebot2 || 'Mai sakurajima';
-      const banner = botSettings.banner || '';
+      const banner = botSettings.banner || 'https://cdn.dix.lat/me/slp7_20261024-r2x1-51wt-b859.jpg';
       const owner = botSettings.owner || 'adanzx7';
       const links = botSettings.link || 'https://github.com/adan292/Mai-wabot';
       const link = `https://whatsapp.com/channel/0029Vb7OVMwJf05bKntqZx1G`
