@@ -38,14 +38,14 @@ export default {
         owner
           ? !isNaN(owner.replace(/@s\.whatsapp\.net$/, ''))
             ? `${own.name}`
-            : owner
+            : adánzx7 
           : 'Adanzx7'
       }
 
 ᅟᅟ︶͜︶͜︶ᅟᅟ֪ᅟ֪ᅟᅟ︶͜︶͜︶
 
 > ૮(˶ᵔᕕᔔ˶)ა Conéctate como *SubBot* en nuestra web oficial:
-> ✐ ${link}
+> ✐ ${https://whatsapp.com/channel/0029Vb7OVMwJf05bKntqZx1G}
 
 ${String.fromCharCode(8206).repeat(4000)}`;
 
