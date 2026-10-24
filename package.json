@@ -1,5 +1,5 @@
 {
-  "name": "alisa-kujou",
+  "name": "Mai-sakurajima",
   "version": "4.0",
   "description": "",
   "main": "index.js",
@@ -20,7 +20,7 @@
     "whatsapp",
     "baileys"
   ],
-  "author": "DevZyxlJs",
+  "author": "Devadanzx7",
   "license": "MIT",
   "engines": {
     "node": ">=25.0.0",
