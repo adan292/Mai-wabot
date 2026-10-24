@@ -45,7 +45,7 @@ export default {
 ᅟᅟ︶͜︶͜︶ᅟᅟ֪ᅟ֪ᅟᅟ︶͜︶͜︶
 
 > ૮(˶ᵔᕕᔔ˶)ა Conéctate como *SubBot* en nuestra web oficial:
-> ✐ ${https://whatsapp.com/channel/0029Vb7OVMwJf05bKntqZx1G}
+> ✐ ${link}
 
 ${String.fromCharCode(8206).repeat(4000)}`;
 
