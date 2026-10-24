@@ -53,10 +53,10 @@ if (!tf) {
   await db.updateChatUser(msg.chat, msg.sender, 'stats', tf.stats)
 }
 
-  const rawBotname = settings.namebot2 || 'Stellar';
+  const rawBotname = settings.namebot2 || 'Mai';
   const tipo = settings.type || 'Sub';
   const cleanBotname = rawBotname.replace(/[^a-zA-Z0-9\s]/g, '');
-  const namebot = cleanBotname || 'Stellar';
+  const namebot = cleanBotname || 'Mai';
   const shortForms = [namebot.charAt(0), namebot.split(" ")[0], tipo.split(" ")[0], namebot.split(" ")[0].slice(0, 2), namebot.split(" ")[0].slice(0, 3)];
   const prefixes = shortForms.map(name => `${name}`);
   prefixes.unshift(namebot);
@@ -100,7 +100,7 @@ if (!tf) {
   let text = args.join(' ');
   if (!command) return;
 
-const pushname = msg.pushName || 'Sin nombre'
+const pushname = msg.pushName || 'Mai sakurajima'
 
 const consolePrimary = chatData.primaryBot;
 
