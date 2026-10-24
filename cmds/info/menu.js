@@ -9,11 +9,11 @@ export default {
     try {
       const botId = sock?.user?.id.split(':')[0] + '@s.whatsapp.net' || '';
       const botSettings = await db.getSettings(botId);
-      const botname = botSettings.namebot || '';
-      const botname2 = botSettings.namebot2 || '';
+      const botname = botSettings.namebot || 'Mai';
+      const botname2 = botSettings.namebot2 || 'Mai sakurajima';
       const banner = botSettings.banner || '';
-      const owner = botSettings.owner || '';
-      const links = botSettings.link || '';
+      const owner = botSettings.owner || 'adanzx7';
+      const links = botSettings.link || 'https://github.com/adan292/Mai-wabot';
       const link = `https://whatsapp.com/channel/0029Vb7OVMwJf05bKntqZx1G`
 
       const oficialId = global?.sock
