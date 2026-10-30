@@ -2,7 +2,7 @@ import fs from 'fs';
 import { watchFile, unwatchFile } from 'fs'
 import { fileURLToPath } from 'url'
 
-global.owner = ['5492916450307']
+global.owner = ['584120299482']
 
 /*  ⚠︎ INFORMATION ⚠︎
 Esta key solo está disponible en *cafirexos.com*.  
@@ -10,12 +10,12 @@ Si intentas usarla en otros hosts, no funcionará.
 Para acceder a la API en otro host, debes crear una cuenta en api.stellarwa.xyz y adquirir un plan Premium. */
 
 global.api = {
-  url: 'https://api.stellarwa.xyz',
-  key: 'NekoWare@Stellar' 
+  url: 'https://api.alyacore.xyz',
+  key: 'Miku_michi' 
 }
 
 global.msgglobal = '《✧》 Se encontró un error en este comando, intenta mas tarde.\n> ✿ Si el error persiste, reportalo con el comando *#report*.'
-global.dev = `ʙᴜɪʟᴛ ʙʏ ɪ'ᴍ ᴅɪᴇɢᴏ ♡`
+global.dev = `ʙᴜɪʟᴛ ʙʏ ɪ'ᴍ adánzx7 ♡`
 
 global.mess = {
   socket: '(∩´͈ ᴖ `͈∩ ྀི) Este comando solo puede ser ejecutado por un Socket.',
