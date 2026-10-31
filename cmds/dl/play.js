@@ -4,8 +4,8 @@ import fetch from "node-fetch"
 
 // ⚠️ RECUERDA: Configura aquí las credenciales de tu API si no las importas de un archivo global
 const api = {
-  url: "TU_API_URL_AQUI", 
-  key: "TU_API_KEY_AQUI"
+  url: "https://api.stellarwa.xyz", 
+  key: "api-9yzVU"
 }
 
 export default {
