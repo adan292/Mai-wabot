@@ -51,8 +51,8 @@ export default {
     const botId = sock.user.id.split(':')[0] + "@s.whatsapp.net";
     const botSettings = await db.getSettings(botId);
 
-    const botname = botSettings.namebot || 'Ai Surus';
-    const botname2 = botSettings.namebot2 || 'Surus';
+    const botname = botSettings.namebot || 'mai';
+    const botname2 = botSettings.namebot2 || 'sakurajima';
     const monedas = botSettings.currency || 'BitCoins';
     const banner = botSettings.banner;
     const owner = botSettings.owner;
@@ -97,7 +97,7 @@ export default {
 𖹭᳔ㅤㅤㅤׄㅤㅤ❏ㅤㅤׅㅤㅤゕㅤㅤׄㅤㅤㅤ𑄾𑄾
 
 ׅ  ׄ  ✿   ׅ り Tipo :: *${botType}*
-ׅ  ׄ  ✿   ׅ り Developer :: ${owner ? (!isNaN(owner.replace(/@s\.whatsapp\.net$/, '')) ? `@${owner.split('@')[0]}` : owner) : "Oculto por privacidad"}
+ׅ  ׄ  ✿   ׅ り Developer :: ${owner ? (!isNaN(owner.replace(/@s\.whatsapp\.net$/, '')) ? `@${owner.split('@')[0]}` : owner) : "adánzx7"}
 ׅ  ׄ  ✿   ׅ り Activo Desde :: *${formattedUptimeDate}*
 ׅ  ׄ  ✿   ׅ り Ram Utilizada :: *${ram}*
 ׅ  ׄ  ✿   ׅ り Plataforma :: *${platform}*
