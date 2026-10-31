@@ -1,16 +1,16 @@
 import axios from "axios"
-import { lang } from "#langs"
 
 export default {
   command: ["pinterest", "pin"],
   category: "search",
-  run: async ({ msg, sock, args, usedPrefix }) => {
-    const t = await lang(msg.sender)
+  run: async ({ msg, sock, args, from }) => {
     const text = args.join(" ")
     const isPinterestUrl = /^https?:\/\//.test(text)
 
     if (!text) {
-      return msg.reply(t.search.pinNoQuery())
+      return msg.reply(
+        `✿ Ingresa un *término* de búsqueda o un enlace de *Pinterest*.`
+      )
     }
 
     try {
@@ -32,23 +32,22 @@ export default {
         const results = jsons.data
 
         if (!results || results.length === 0) {
-          return msg.reply(t.search.pinNoResults(text))
+          return msg.reply(`✿ No se encontraron resultados para *${text}*`)
         }
 
         const medias = []
         for (const result of results.slice(0, 10)) {
-          const url = result.hd || result.url
-          if (!url) continue
-
-          let caption = `${t.search.pinCaptionTitle()}\n\n`
-          if (result.title)       caption += `${t.search.pinCaptionTitleLine(result.title)}\n`
-          if (result.description) caption += `${t.search.pinCaptionDesc(result.description)}\n`
-          if (result.full_name)   caption += `${t.search.pinCaptionAuthor(result.full_name)}\n`
-          if (result.likes)       caption += `${t.search.pinCaptionLikes(result.likes)}\n`
-          if (result.created)     caption += `${t.search.pinCaptionCreated(result.created)}`
+          const caption =
+            `ꕥ ꨩᰰ𑪐𑂺 ˳ ׄ 𝖯𝗂𝗇𝗍𝖾𝗋𝖾𝗌𝗍 𝖲𝖾𝖺𝗋𝖼𝗁 ࣭𑁯ᰍ   ̊ ܃܃\n\n` +
+            `${result.title ? `𖣣ֶㅤ֯⌗ ✿ ⬭ Título › *${result.title}*\n` : ""}` +
+            `${result.description ? `𖣣ֶㅤ֯⌗ ❀ ⬭ Descripción › *${result.description}*\n` : ""}` +
+            `${result.full_name ? `𖣣ֶㅤ֯⌗ ❑ ⬭ Autor › *${result.full_name}*\n` : ""}` +
+            `${result.likes ? `𖣣ֶㅤ֯⌗ ♡ ⬭ Likes › *${result.likes}*\n` : ""}` +
+            `${result.created ? `𖣣ֶㅤ֯⌗ ✤ ⬭ Publicado › *${result.created}*` : ""}`
 
           medias.push({
-            image: { url },
+            type: "image",
+            data: { url: result.hd || result.url },
             caption
           })
         }
@@ -56,12 +55,15 @@ export default {
         if (medias.length) {
           await sock.sendAlbumMessage(msg.chat, medias, { quoted: msg })
         } else {
-          await msg.reply(t.search.pinNoProcess())
+          await msg.reply(`✿ No se pudieron procesar los resultados.`)
         }
       }
     } catch (e) {
-      console.error("[pinterest] error:", e)
-      await sock.reply(msg.chat, t.search.searchError(usedPrefix), msg)
+      await sock.reply(
+        msg.chat,
+        msgglobal,
+        msg
+      )
     }
   },
 }
