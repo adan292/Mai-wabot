@@ -126,7 +126,7 @@ export default {
             'canonical-url': link,
             'matched-text': link,
             title: botname,
-            description: `${botname2}, Built With 🤍 By Stellar`,
+            description: `${botname2}, Built With ❤️‍🩹 By adánzx7`,
             jpegThumbnail: imageMessage?.jpegThumbnail
               ? Buffer.from(imageMessage.jpegThumbnail)
               : undefined,
