@@ -7,28 +7,32 @@ export default {
   desc: 'Menú oficial by adánzx7',
   run: async ({ msg, sock, args, usedPrefix: prefix }) => {
     try {
-      // --- CONFIG FIJA DE adánzx7 ---
       const banner = 'https://cdn.dix.lat/me/9klt_20261030-r2x1-vn3a-d60f.jpg';
       const channelLink = 'https://whatsapp.com/channel/0029Vb7OVMwJf05bKntqZx1G';
       const ownerName = 'adánzx7';
-      const botname2 = 'Gogeta-Bot';
 
       const botId = sock?.user?.id.split(':')[0] + '@s.whatsapp.net';
-      const botSettings = await db.getSettings(botId).catch(() => ({}));
-      const botname = botSettings?.namebot || botname2;
+      
+      // FIX AQUÍ - sin .catch
+      let botSettings = {};
+      try {
+        botSettings = db.getSettings(botId) || {};
+        if (botSettings.then) botSettings = await botSettings;
+      } catch { botSettings = {}; }
 
-      let menuText = `
-╭━━━〘 *${botname}* 〙━━━╮
+      const botname = botSettings?.namebot || 'Gogeta-Bot';
+      const botname2 = botSettings?.namebot2 || 'Gogeta';
+
+      let menuText = `╭━━━〘 *${botname}* 〙━━━╮
 ┃  👑 Creador: ${ownerName}
 ┃  ⚡ Prefijo: ${prefix}
 ┃  📦 Comandos: ${commands.length}
 ╰━━━━━━━━━━━━━━━╯
 
-> Hola, soy *${botname2}* el bot oficial de ${ownerName}
+> Hola, soy *${botname2}*
 > Canal: ${channelLink}
 
-${String.fromCharCode(8206).repeat(4000)}
-`;
+${String.fromCharCode(8206).repeat(4000)}`;
 
       const categorias = {};
       for (const cmd of commands) {
@@ -45,7 +49,7 @@ ${String.fromCharCode(8206).repeat(4000)}
 
       for (const [cat, cmds] of Object.entries(categorias)) {
         const icono = emojiCat[cat] || '❖';
-        menuText += `\n╭─「 ${icono} *${cat.toUpperCase()}* ${icono} 」─╮\n`;
+        menuText += `\n╭─「 ${icono} *${cat.toUpperCase()}* 」─╮\n`;
         cmds.forEach(c => {
           let cmdName = c.command?.[0] || c.alias?.[0] || 'sin-nombre';
           menuText += `│  ◦ ${prefix}${cmdName} ${c.uso ? c.uso : ''}\n`;
@@ -55,26 +59,24 @@ ${String.fromCharCode(8206).repeat(4000)}
 
       menuText += `\n> ✨ *Powered by ${ownerName}*`;
 
-      // Enviar con imagen + externalAdReply (la forma que SÍ funciona en Mai)
       await sock.sendMessage(msg.chat, {
         image: { url: banner },
         caption: menuText,
         contextInfo: {
           externalAdReply: {
-            title: `${botname} | By ${ownerName}`,
+            title: `${botname2} | By ${ownerName}`,
             body: 'Gogeta-Bot - Menú Oficial',
             thumbnailUrl: banner,
             sourceUrl: channelLink,
             mediaType: 1,
-            renderLargerThumbnail: true,
-            showAdAttribution: false
+            renderLargerThumbnail: true
           }
         }
       }, { quoted: msg });
 
     } catch (e) {
       console.error('[MENU ERROR]', e);
-      await sock.sendMessage(msg.chat, { text: `❌ Error en el menú:\n${e.message}\n\nAvisa a ${'adánzx7'}` }, { quoted: msg });
+      await sock.sendMessage(msg.chat, { text: `❌ Error: ${e.stack}` }, { quoted: msg });
     }
   }
 };
