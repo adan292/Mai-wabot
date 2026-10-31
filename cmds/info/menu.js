@@ -13,11 +13,11 @@ export default {
       
       const botname = botSettings.namebot || 'Gogeta-Bot';
       const botname2 = botSettings.namebot2 || 'Gogeta';
-      const banner = botSettings.banner || 'https://cdn.dix.lat/me/9klt_20261030-r2x1-vn3a-d60f.jpg';
+      // BANNER FIJO DE adánzx7
+      const banner = 'https://cdn.dix.lat/me/9klt_20261030-r2x1-vn3a-d60f.jpg';
       const ownerId = botSettings.owner || 'adanzx7';
       const links = botSettings.link || 'https://api.alyacore.xyz';
       
-      // CANAL OFICIAL FIJO DE adánzx7
       const channelLink = `https://whatsapp.com/channel/0029Vb7OVMwJf05bKntqZx1G`;
 
       const oficialId = global?.sock ? global.sock.user.id.split(':')[0] + '@s.whatsapp.net' : '';
@@ -25,7 +25,7 @@ export default {
       const botType = isOficialBot ? '𝐎𝐰𝐧𝐞𝐫' : '𝐒𝐮𝐛-𝐁𝐨𝐭';
 
       const own = await db.getUser(ownerId);
-      const ownerName = own?.name || ownerId.replace(/@s\.whatsapp\.net$/, '') || 'adánzx7';
+      const ownerName = own?.name || 'adánzx7';
 
       let menu = `‎   ── ˙ ¡𝐇ola!, soy ${botname2} (*${botType}*) .
 ✎ ᴀǫᴜɪ ᴛɪᴇɴᴇs ʟᴀ ʟɪsᴛᴀ ᴅᴇ ʟᴏs ᴄᴏᴍᴀɴᴅᴏs
@@ -60,54 +60,39 @@ ${String.fromCharCode(8206).repeat(4000)}`;
       ];
 
       const categoryNameMap = {
-        'anime': '𝐀𝗇𝗂𝗆𝖾',
-        'download': '𝐃ownload',
-        'economia': '𝐄conomia',
-        'gacha': '𝐆acha',
-        'grupo': '𝐆rupo',
-        'ia': '𝐈a',
-        'info': '𝐈nfo',
-        'nsfw': '𝐍sfw',
-        'profile': '𝐏rofile',
-        'search': '𝐒earch',
-        'sockets': '𝐒ocket',
-        'socket': '𝐒ocket',
-        'stickers': '𝐒ticker',
-        'sticker': '𝐒ticker',
-        'utils': '𝐔tils',
-        'otros': '𝐎tros'
+        'anime': '𝐀𝗇𝗂𝗆𝖾', 'download': '𝐃ownload', 'economia': '𝐄conomia',
+        'gacha': '𝐆acha', 'grupo': '𝐆rupo', 'ia': '𝐈a', 'info': '𝐈nfo',
+        'nsfw': '𝐍sfw', 'profile': '𝐏rofile', 'search': '𝐒earch',
+        'sockets': '𝐒ocket', 'socket': '𝐒ocket', 'stickers': '𝐒ticker',
+        'sticker': '𝐒ticker', 'utils': '𝐔tils', 'otros': '𝐎tros'
       };
 
       const categoryDescriptions = {
         'anime': 'Comandos de reacciones de anime.',
-        'download': 'Comandos de Descargas para descargar archivos de varias fuentes.',
-        'economia': 'Comandos de Economía para ganar dinero y divertirte.',
-        'gacha': 'Comandos de Gacha para reclamar y intercambiar personajes.',
+        'download': 'Comandos de Descargas para descargar archivos.',
+        'economia': 'Comandos de Economía para ganar dinero.',
+        'gacha': 'Comandos de Gacha para reclamar personajes.',
         'grupo': 'Comandos para administradores de grupos.',
         'ia': 'Comandos de Inteligencia Artificial.',
         'info': 'Comandos de información general del bot.',
         'nsfw': 'Comandos NSFW (contenido para adultos).',
-        'profile': 'Comandos de Perfil para ver y configurar tu perfil.',
-        'search': 'Comandos de búsqueda en diferentes plataformas.',
+        'profile': 'Comandos de Perfil.',
+        'search': 'Comandos de búsqueda.',
         'sockets': 'Comandos para registrar tu propio Sub-Bot.',
-        'stickers': 'Comandos de Stickers para crear y gestionar stickers.',
-        'utils': 'Comandos de Utilidades para el día a día.'
+        'stickers': 'Comandos de Stickers.',
+        'utils': 'Comandos de Utilidades.'
       };
 
       const availableCategories = Object.keys(categories);
 
       if (categoryArg && !availableCategories.includes(categoryArg)) {
-        return msg.reply(
-          `《✤》 La categoría *${categoryArg}* no fue encontrada.\n\n> Categorías disponibles:\n${availableCategories.map(c => `› ${prefix}${c}`).join('\n')}`
-        );
+        return msg.reply(`《✤》 La categoría *${categoryArg}* no fue encontrada.\n\n> Categorías disponibles:\n${availableCategories.map(c => `› ${prefix}${c}`).join('\n')}`);
       }
 
       let emojiIndex = 0;
-
       for (const [category, cmds] of Object.entries(categories)) {
         if (categoryArg && category.toLowerCase() !== categoryArg) continue;
-
-        const catName = categoryNameMap[category] || category.charAt(0).toUpperCase() + category.slice(1);
+        const catName = categoryNameMap[category] || category;
         const catEmoji = categoryEmojisList[emojiIndex % categoryEmojisList.length];
         emojiIndex++;
         const description = categoryDescriptions[category] || `Comandos de ${catName}.`;
@@ -117,28 +102,14 @@ ${String.fromCharCode(8206).repeat(4000)}`;
 
         cmds.forEach((cmd) => {
           const aliases = (cmd.alias && cmd.alias.length > 0 ? cmd.alias : cmd.command || [])
-            .map((a) => {
-              const aliasClean = a.split(/[\/#!+.\-]+/).pop().toLowerCase();
-              return `${prefix}${aliasClean}`;
-            })
-            .join(' › ');
+            .map((a) => `${prefix}${a.split(/[\/#!+.\-]+/).pop().toLowerCase()}`).join(' › ');
           menu += `❀   ᠀᠀ㅤ۟  ${aliases} ${cmd.uso ? `+ ${cmd.uso}` : ''}\n`;
           menu += `> ── 𑁪ㅤׅㅤ۫ _${cmd.desc || 'Sin descripción'}_\n`;
         });
-
         menu += `\n ㅤׅㅤ۫ㅤㅤ      ﹙❀﹚ㅤׅㅤㅤ˚ㅤ\n`;
       }
 
-      const isVideo = banner.endsWith('.mp4') || banner.includes('.mp4') || banner.includes('.gif');
-
-      if (isVideo) {
-        return sock.sendMessage(
-          msg.chat,
-          { video: { url: banner }, caption: menu.trim() },
-          { quoted: msg }
-        );
-      }
-
+      // Preview con tu banner
       let preview;
       try {
         const imgPrev = await linksPreview(sock, banner);
@@ -153,7 +124,20 @@ ${String.fromCharCode(8206).repeat(4000)}`;
 
       return sock.sendMessage(
         msg.chat,
-        { text: menu, linkPreview: preview ? { ...preview, showAdAttribution: true } : undefined },
+        { 
+          text: menu, 
+          contextInfo: {
+            externalAdReply: {
+              title: `${botname2} - By adánzx7`,
+              body: 'Gogeta-Bot Oficial',
+              thumbnailUrl: banner,
+              sourceUrl: channelLink,
+              mediaType: 1,
+              renderLargerThumbnail: true
+            }
+          },
+          linkPreview: preview ? { ...preview, showAdAttribution: true } : undefined 
+        },
         { quoted: msg }
       );
 
