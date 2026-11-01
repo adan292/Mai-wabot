@@ -16,10 +16,7 @@ export default {
 
       const botname = botSettings.namebot || 'Gogeta-Bot';
       const botname2 = botSettings.namebot2 || 'Gogeta';
-
-      const defaultBanner = 'https://cdn.dix.lat/me/9klt_20261030-r2x1-vn3a-d60f.jpg';
-      const banner = botSettings.banner || defaultBanner;
-
+      const banner = botSettings.banner || 'https://cdn.dix.lat/me/9klt_20261030-r2x1-vn3a-d60f.jpg';
       const ownerId = botSettings.owner || 'adanzx7';
       const links = botSettings.link || 'https://api.alyacore.xyz';
 
@@ -125,7 +122,9 @@ export default {
         return await msg.reply(
           `《✤》 La categoría *${categoryArg}* no fue encontrada.\n\n` +
           `> Categorías disponibles:\n` +
-          availableCategories.map(category => `› ${prefix}${category}`).join('\n')
+          availableCategories
+            .map(category => `› ${prefix}${category}`)
+            .join('\n')
         );
       }
 
@@ -179,46 +178,57 @@ export default {
         menu += `\n ㅤׅㅤ۫ㅤㅤ      ﹙❀﹚ㅤׅㅤㅤ˚ㅤ\n`;
       }
 
+      const defaultBanner = 'https://cdn.dix.lat/me/9klt_20261030-r2x1-vn3a-d60f.jpg';
+
       const thumbnailUrl = /\.(mp4|gif)(?:[?#]|$)/i.test(banner)
         ? defaultBanner
         : banner;
 
-      let thumbnail;
+      let preview = null;
 
       try {
-        const preview = await linksPreview(sock, thumbnailUrl);
+        const result = await linksPreview(sock, thumbnailUrl);
 
-        if (preview?.jpegThumbnail) {
-          thumbnail = Buffer.from(preview.jpegThumbnail);
+        if (result?.jpegThumbnail) {
+          const jpegThumbnail = Buffer.from(result.jpegThumbnail);
+
+          preview = {
+            'canonical-url': links,
+            'matched-text': links,
+            title: botname,
+            description: `${botname2}, Built With 🤍 By ${ownerName}`,
+            previewType: 0,
+            jpegThumbnail,
+            ...(result.highQualityThumbnail
+              ? { highQualityThumbnail: result.highQualityThumbnail }
+              : {})
+          };
         }
       } catch (error) {
-        console.error('Error al generar miniatura:', error);
+        console.error('Error al generar vista previa:', error);
       }
 
-      const externalAdReply = {
-        title: botname,
-        body: `${botname2}, Built With 🤍 By ${ownerName}`,
-        mediaType: 1,
-        thumbnailUrl,
-        sourceUrl: links,
-        renderLargerThumbnail: true,
-        showAdAttribution: false,
-        ...(thumbnail ? { thumbnail } : {})
+      const content = {
+        text: menu.trim()
       };
 
-      return await sock.sendMessage(
-        msg.chat,
-        {
-          text: menu.trim(),
-          linkPreview: null,
-          contextInfo: {
-            externalAdReply
-          }
-        },
-        {
+      if (preview) {
+        content.linkPreview = preview;
+      }
+
+      try {
+        return await sock.sendMessage(msg.chat, content, {
           quoted: msg
-        }
-      );
+        });
+      } catch (error) {
+        console.error('Error al enviar vista previa:', error);
+
+        return await sock.sendMessage(
+          msg.chat,
+          { text: menu.trim() },
+          { quoted: msg }
+        );
+      }
     } catch (error) {
       console.error('Error en el menú:', error);
 
