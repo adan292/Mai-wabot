@@ -1,6 +1,5 @@
 import db from '#db';
 import { commands } from '../../lib/system/comandos.js';
-import { linksPreview } from '#serialize';
 
 export default {
   command: ['allmenu', 'help', 'menu'],
@@ -178,54 +177,30 @@ export default {
         menu += `\n ㅤׅㅤ۫ㅤㅤ      ﹙❀﹚ㅤׅㅤㅤ˚ㅤ\n`;
       }
 
-      const defaultBanner = 'https://cdn.dix.lat/me/9klt_20261030-r2x1-vn3a-d60f.jpg';
-
-      const thumbnailUrl = /\.(mp4|gif)(?:[?#]|$)/i.test(banner)
-        ? defaultBanner
-        : banner;
-
-      let preview = null;
+      const content = menu.trim();
+      const isVideo = /\.(mp4|gif)(?:[?#]|$)/i.test(banner);
 
       try {
-        const result = await linksPreview(sock, thumbnailUrl);
+        const media = isVideo
+          ? {
+              video: { url: banner },
+              caption: content,
+              gifPlayback: /\.gif(?:[?#]|$)/i.test(banner)
+            }
+          : {
+              image: { url: banner },
+              caption: content
+            };
 
-        if (result?.jpegThumbnail) {
-          const jpegThumbnail = Buffer.from(result.jpegThumbnail);
-
-          preview = {
-            'canonical-url': links,
-            'matched-text': links,
-            title: botname,
-            description: `${botname2}, Built With 🤍 By ${ownerName}`,
-            previewType: 0,
-            jpegThumbnail,
-            ...(result.highQualityThumbnail
-              ? { highQualityThumbnail: result.highQualityThumbnail }
-              : {})
-          };
-        }
-      } catch (error) {
-        console.error('Error al generar vista previa:', error);
-      }
-
-      const content = {
-        text: menu.trim()
-      };
-
-      if (preview) {
-        content.linkPreview = preview;
-      }
-
-      try {
-        return await sock.sendMessage(msg.chat, content, {
+        return await sock.sendMessage(msg.chat, media, {
           quoted: msg
         });
-      } catch (error) {
-        console.error('Error al enviar vista previa:', error);
+      } catch (mediaError) {
+        console.error('Error al enviar banner:', mediaError);
 
         return await sock.sendMessage(
           msg.chat,
-          { text: menu.trim() },
+          { text: content },
           { quoted: msg }
         );
       }
