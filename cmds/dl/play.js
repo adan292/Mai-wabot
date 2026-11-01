@@ -26,25 +26,52 @@ export default {
       const text = args.join(" ")
       await sock.sendMessage(msg.chat, { react: { text: '🕒', key: msg.key } })
 
-      const searchResult = await ytsearch(text)
-      if (!searchResult.videos?.length) {
-        return msg.reply("《✧》 No se encontró información del video.")
+      // Si el argumento ya es un enlace de YouTube, lo usamos directamente. Si no, buscamos.
+      let videoUrl = ""
+      let title = ""
+      let duration = ""
+      let vistas = "0"
+      let canal = "Desconocido"
+      let image = ""
+
+      if (text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)) {
+        videoUrl = text
+        const searchResult = await ytsearch({ videoId: text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)[1] })
+        if (searchResult) {
+          title = searchResult.title
+          duration = searchResult.duration?.timestamp || ""
+          vistas = (searchResult.views || 0).toLocaleString()
+          canal = searchResult.author?.name || "Desconocido"
+          image = searchResult.image || searchResult.thumbnail || ""
+        } else {
+          title = "Video de YouTube"
+        }
+      } else {
+        const searchResult = await ytsearch(text)
+        if (!searchResult.videos?.length) {
+          await sock.sendMessage(msg.chat, { react: { text: '✖️', key: msg.key } })
+          return msg.reply("《✧》 No se encontró información del video.")
+        }
+        const video = searchResult.videos[0]
+        videoUrl = video.url
+        title = video.title
+        duration = video.timestamp || ""
+        vistas = (video.views || 0).toLocaleString()
+        canal = video.author?.name || video.author || "Desconocido"
+        image = video.image || video.thumbnail || ""
       }
 
-      const video = searchResult.videos[0]
-      const { title, author, timestamp: duration, views, url, image } = video
-      const vistas = (views || 0).toLocaleString()
-      const canal = author?.name || author || "Desconocido"
-
       let thumbBuffer
-      try { thumbBuffer = await getBuffer(image) } catch { thumbBuffer = null }
+      if (image) {
+        try { thumbBuffer = await getBuffer(image) } catch { thumbBuffer = null }
+      }
 
       const caption = `【　✿　】 _\`୨୧  Download\` ───── *${title}*_
 
 > _✐ \`Canal\` ── ${canal}_
 > _ⴵ \`Duración\` ── ${duration || ''}_
 > _✰ \`Vistas\` ── ${vistas}_
-> _🜸 \`Enlace\` ── ${url}_
+> _🜸 \`Enlace\` ── ${videoUrl}_
 
 > _──  ִ    ۟  *¡Enviando audio, por favor espera!*_`
 
@@ -54,23 +81,21 @@ export default {
         await msg.reply(caption)
       }
 
-      // --- SISTEMA DE DESCARGA ARREGLADO ---
+      // --- SISTEMA DE DESCARGA CON URL ENCONTRADO ---
       const APIS = [
-        // Tu API principal
         {
           name: 'AlyaCore',
-          url: `https://api.alyacore.xyz/dl/ytmp3?url=${encodeURIComponent(url)}`,
+          url: `https://api.alyacore.xyz/dl/ytmp3?url=${encodeURIComponent(videoUrl)}`,
           extractor: (json) => json?.data?.dl || json?.result?.dl || json?.dl || json?.data?.download_url
         },
-        // Fallbacks por si falla
         {
           name: 'ZenzzXD',
-          url: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`,
+          url: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(videoUrl)}`,
           extractor: (json) => json?.data?.download_url || json?.download_url
         },
         {
           name: 'Vreden',
-          url: `https://api.vreden.my.id/api/v1/download/youtube/audio?url=${encodeURIComponent(url)}&quality=128`,
+          url: `https://api.vreden.my.id/api/v1/download/youtube/audio?url=${encodeURIComponent(videoUrl)}&quality=128`,
           extractor: (json) => json?.result?.download?.url
         }
       ]
@@ -101,12 +126,11 @@ export default {
         return msg.reply("《✧》 No se pudo descargar el *audio* de ningún servidor, intenta más tarde.")
       }
 
-      // FIX CLAVE: descargar buffer con headers
       const audioRes = await fetch(dlUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } })
       if (!audioRes.ok) throw new Error(`Servidor ${apiUsada} devolvió ${audioRes.status}`)
       
       const audioBuffer = Buffer.from(await audioRes.arrayBuffer())
-      if (audioBuffer.length < 1000) throw new Error('Archivo vacío')
+      if (audioBuffer.length < 1000) throw new Error('Archivo vacío o corrupto')
 
       console.log(`[PLAY] Audio descargado de ${apiUsada}: ${audioBuffer.length} bytes`)
 
@@ -114,7 +138,7 @@ export default {
         audio: audioBuffer,
         mimetype: 'audio/mpeg',
         fileName: `${title}.mp3`,
-        ptt: false // ponlo en true si lo quieres como nota de voz
+        ptt: false
       }, { quoted: msg })
 
       await sock.sendMessage(msg.chat, { react: { text: '✔️', key: msg.key } })
