@@ -1,7 +1,7 @@
 import db from "#db";
 import ytsearch from "yt-search";
-import sharp from "sharp";
 import axios from "axios";
+import sharp from "sharp";
 
 async function fetchBuffer(url) {
   const res = await axios.get(url, { responseType: "arraybuffer", timeout: 60000 });
@@ -13,11 +13,12 @@ function formatSize(mb) {
   return `${mb.toFixed(2)} MB`;
 }
 
-function isRealMp3(buf) {
-  if (!buf || buf.length < 4) return false;
-  if (buf[0] === 0x49 && buf[1] === 0x44 && buf[2] === 0x33) return true;
-  if (buf[0] === 0xFF && (buf[1] & 0xE0) === 0xE0) return true;
-  return false;
+function isValidAudio(buf) {
+  if (!buf || buf.length < 1000) return false;
+  // si es html es que falló la api
+  const head = buf.slice(0, 200).toString().toLowerCase();
+  if (head.includes('<html') || head.includes('<!doctype')) return false;
+  return true;
 }
 
 export default {
@@ -26,16 +27,16 @@ export default {
   run: async ({ msg, sock, args, command }) => {
     try {
       if (!args[0]) {
-        return msg.reply("《✧》 Por favor, menciona el nombre o URL del video que deseas descargar.");
+        return msg.reply("Ay Senpai... escribe el nombre de la canción. Ej: #play diles - bad bunny 🐰");
       }
 
-      const apiCfg = globalThis.api || {
+      const apiCfg = global.api || globalThis.api || {
         url: process.env.API_URL || "",
         key: process.env.API_KEY || ""
       };
 
       if (!apiCfg.url || !apiCfg.key) {
-        return msg.reply("《✧》 La API de descarga no está configurada.");
+        return msg.reply("《✧》 La API de descarga no está configurada, Senpai.");
       }
 
       const botId = sock.user.id.split(":")[0] + "@s.whatsapp.net";
@@ -45,42 +46,39 @@ export default {
       const isModBot = Number(settings.botmod) === 1;
       const isPremiumBot = Number(settings.botprem) === 1;
 
-      const maxSize = isOficialBot
-        ? 5 * 1024
-        : isModBot
-          ? 3 * 1024
-          : isPremiumBot
-            ? 2 * 1024
-            : 100;
+      const maxSize = isOficialBot ? 5 * 1024 : isModBot ? 3 * 1024 : isPremiumBot ? 2 * 1024 : 100;
 
       const text = args.join(" ");
-      const searchResult = await ytsearch(text);
+      await msg.reply(`Ay... buscando *${text}*, espera un momento, tonto Senpai...`);
 
+      const searchResult = await ytsearch(text);
       if (!searchResult?.videos?.length) {
-        return msg.reply("《✧》 No se encontró información del video.");
+        return msg.reply("No encontré nada, Senpai... ¿escribiste bien?");
       }
 
       const video = searchResult.videos[0];
       const { author, timestamp: duration, views, url, image, seconds } = video;
       const title = String(video.title || "audio");
       const vistas = (views || 0).toLocaleString();
-      const canal = author?.name || author || "Desconocido";
+      const canal = author?.name || "Desconocido";
 
       const estimatedMB = ((seconds || 0) * 128000) / 8 / (1024 * 1024);
       if (estimatedMB > maxSize) {
-        return msg.reply(`《✧》 El archivo solicitado pesa aproximadamente *${formatSize(estimatedMB)}* y supera el límite permitido para este Socket *(${formatSize(maxSize)})*.`);
+        return msg.reply(`Ay, pesa *${formatSize(estimatedMB)}* y solo puedo mandar *${formatSize(maxSize)}* en este bot, Senpai.`);
       }
 
       const thumbBuffer = await fetchBuffer(image);
 
-      const caption = `【　✿　】 _\`୨୧  Download\` ───── *${title}*_
-
-> _✐ \`Canal\` ── ${canal}_
-> _ⴵ \`Duración\` ── ${duration || ""}_
-> _✰ \`Vistas\` ── ${vistas}_
-> _🜸 \`Enlace\` ── ${url}_
-
-> _──  ִ    ۟  *¡Enviando audio, por favor espera!*_`;
+      const caption = `╭─「 *MAI MUSIC* 🐰 」─╮
+│
+│  ✿ *${title}*
+│
+│  ⴵ Canal: ${canal}
+│  ⏱️ Duración: ${duration}
+│  👁️ Vistas: ${vistas}
+│  🔗 ${url}
+│
+╰──  *Enviando audio, espera...*  ──╯`;
 
       await sock.sendMessage(msg.chat, { image: thumbBuffer, caption }, { quoted: msg });
 
@@ -89,75 +87,82 @@ export default {
       const baseUrl = String(apiCfg.url).replace(/\/+$/, "");
 
       const endpoints = [
-        { name: "v1", url: `${baseUrl}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${apiCfg.key}`, pick: d => d?.data?.dl },
-        { name: "v2", url: `${baseUrl}/dl/ytmp3v2?url=${encodeURIComponent(url)}&key=${apiCfg.key}`, pick: d => d?.data?.dl },
-        { name: "v3", url: `${baseUrl}/dl/ytmp3v3?url=${encodeURIComponent(url)}&key=${apiCfg.key}`, pick: d => d?.data?.dl }
+        { name: "v1", url: `${baseUrl}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${apiCfg.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
+        { name: "v2", url: `${baseUrl}/dl/ytmp3v2?url=${encodeURIComponent(url)}&key=${apiCfg.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
+        { name: "v3", url: `${baseUrl}/dl/ytmp3v3?url=${encodeURIComponent(url)}&key=${apiCfg.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
       ];
 
       for (const it of endpoints) {
         if (audioBuffer) break;
         try {
-          const res = await axios.get(it.url, { timeout: 20000 });
+          const res = await axios.get(it.url, { timeout: 25000 });
           const dlUrl = it.pick(res.data);
           if (!dlUrl) continue;
 
           const buf = await fetchBuffer(dlUrl);
-          if (!isRealMp3(buf)) {
-            console.log(`[play] ${it.name} no-MP3 (${buf.length} bytes)`);
+          if (!isValidAudio(buf)) {
+            console.log(`[play] ${it.name} devolvió html/no-audio`);
             continue;
           }
-
           audioBuffer = buf;
-          audioTitle = String(res.data?.data?.title || res.data?.title || res.data?.data?.metadata?.title || title);
+          audioTitle = res.data?.data?.title || res.data?.title || title;
+          console.log(`[play] éxito con ${it.name}`);
         } catch (e) {
           console.log(`[play] ${it.name} falló: ${e.message}`);
         }
       }
 
+      // fallback v4 que devuelve buffer directo
       if (!audioBuffer) {
         try {
           const resV4 = await axios.get(`${baseUrl}/dl/ytmp3v4?url=${encodeURIComponent(url)}&key=${apiCfg.key}`, {
-            responseType: "arraybuffer",
-            timeout: 30000
+            responseType: "arraybuffer", timeout: 40000
           });
           const buf = Buffer.from(resV4.data);
-          if (isRealMp3(buf)) audioBuffer = buf;
+          if (isValidAudio(buf)) audioBuffer = buf;
         } catch (e) {
           console.log(`[play] v4 falló: ${e.message}`);
         }
       }
 
       if (!audioBuffer) {
-        return msg.reply("《✧》 No se pudo descargar el *audio*, intenta más tarde.");
+        return msg.reply("Ay Senpai... no pude descargar el audio, la API está fallando. Intenta más tarde.");
       }
 
       const sizeMB = audioBuffer.length / (1024 * 1024);
       if (sizeMB > maxSize) {
-        return msg.reply(`《✧》 El archivo solicitado pesa *${formatSize(sizeMB)}* y supera el límite permitido para este Socket *(${formatSize(maxSize)})*.`);
+        return msg.reply(`Pesa *${formatSize(sizeMB)}* y supera el límite *${formatSize(maxSize)}*`);
       }
 
-      const safeTitle = String(audioTitle).replace(/[\\/:*?"<>|]/g, "").trim() || "audio";
-      const thumbBuffer2 = await sharp(thumbBuffer).resize(300, 300).jpeg({ quality: 80 }).toBuffer();
+      const safeTitle = String(audioTitle).replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60) || "audio";
+      let thumbSmall;
+      try {
+        thumbSmall = await sharp(thumbBuffer).resize(300, 300).jpeg({ quality: 80 }).toBuffer();
+      } catch {
+        thumbSmall = thumbBuffer;
+      }
 
       const isAudioNormal = command === "playaudio" || command === "ytaudio";
 
-      if (isAudioNormal || sizeMB < 5) {
+      if (isAudioNormal || sizeMB < 10) {
         await sock.sendMessage(msg.chat, {
           audio: audioBuffer,
           mimetype: "audio/mpeg",
-          ptt: false
+          ptt: false,
+          fileName: `${safeTitle}.mp3`
         }, { quoted: msg });
       } else {
         await sock.sendMessage(msg.chat, {
           document: audioBuffer,
           mimetype: "audio/mpeg",
           fileName: `${safeTitle}.mp3`,
-          jpegThumbnail: thumbBuffer2
+          jpegThumbnail: thumbSmall
         }, { quoted: msg });
       }
+
     } catch (e) {
-      console.error(e);
-      await msg.reply(msgglobal);
+      console.error('[PLAY ERROR]', e);
+      await msg.reply(`Ay... hubo un error, Senpai: ${e.message}`);
     }
   }
 };
