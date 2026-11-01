@@ -1,5 +1,6 @@
 import ytsearch from "yt-search"
-import ytdl from "@distube/ytdl-core"
+import { getBuffer } from "#serialize"
+import fetch from "node-fetch"
 
 export default {
   command: ["play", "mp3", "ytmp3", "ytaudio", "playaudio"],
@@ -7,7 +8,7 @@ export default {
   run: async ({ msg, sock, args }) => {
 
     try {
-      if (!args || !args.length) {
+      if (!args || !args[0]) {
         return msg.reply("《✧》Por favor, menciona el nombre o URL del video que deseas descargar")
       }
 
@@ -21,6 +22,7 @@ export default {
       const { title, author, timestamp: duration, views, url, image } = video
       const vistas = (views || 0).toLocaleString()
       const canal = author?.name || author || "Desconocido"
+      const thumbBuffer = await getBuffer(image)
 
       const caption = `【　✿　】 _\`୨୧  Download\` ───── *${title}*_
 
@@ -29,43 +31,55 @@ export default {
 > _✰ \`Vistas\` ── ${vistas}_
 > _🜸 \`Enlace\` ── ${url}_
 
-> _──  ִ    ۟  *¡Generando y enviando audio localmente, por favor espera!*_`
+> _──  ִ    ۟  *¡Enviando audio, por favor espera!*_`
 
-      // Enviamos la miniatura usando directamente la URL de la imagen en lugar de getBuffer para evitar fallos de red
-      await sock.sendMessage(msg.chat, { image: { url: image }, caption }, { quoted: msg })
+      await sock.sendMessage(msg.chat, { image: thumbBuffer, caption }, { quoted: msg })
 
-      // Descarga directa del flujo de audio en alta calidad (128kbps / audioonly)
-      const stream = ytdl(url, { 
-        filter: 'audioonly', 
-        quality: 'highestaudio',
-        highWaterMark: 1 << 25 // Buffer de 32MB para descargas rápidas y fluidas
-      })
+      let audioUrl = null
 
-      const chunks = []
-      for await (const chunk of stream) {
-        chunks.push(chunk)
+      // --- INTENTO 1: Tu API configurada ---
+      try {
+        if (typeof api !== 'undefined' && api.url) {
+          const dlEndpoint = `${api.url}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${api.key}`
+          const resDl = await fetch(dlEndpoint).then(r => r.json())
+          if (resDl?.status && resDl.data?.dl) {
+            audioUrl = resDl.data.dl
+          }
+        }
+      } catch (e) {
+        console.log("Tu API principal falló, intentando servidor espejo...")
       }
-      const audioBuffer = Buffer.concat(chunks)
 
-      // Configuración del mensaje para WhatsApp de forma nativa
+      // --- INTENTO 2: Servidor Espejo Público (Si el primero falló) ---
+      if (!audioUrl) {
+        try {
+          // Usando una API alternativa pública y estable de YouTube a MP3
+          const mirrorRes = await fetch(`https://vreden.web.id{encodeURIComponent(url)}`).then(r => r.json())
+          if (mirrorRes?.status === 200 || mirrorRes?.result?.download?.url) {
+            audioUrl = mirrorRes.result?.download?.url || mirrorRes.data?.url
+          }
+        } catch (e) {
+          console.log("El servidor espejo también falló.")
+        }
+      }
+
+      // --- VERIFICACIÓN FINAL ---
+      if (!audioUrl) {
+        return msg.reply("《✧》 No se pudo descargar el *audio* de ningún servidor, intenta más tarde.")
+      }
+
+      // Envío del mensaje final optimizado
       const mensaje = {
-        audio: audioBuffer,
+        audio: { url: audioUrl },
         mimetype: 'audio/mp4', 
         fileName: `${title}.mp3`,
-        ptt: true // Cambia a false si prefieres que se envíe como archivo de música y no nota de voz
+        ptt: true
       }
 
       await sock.sendMessage(msg.chat, mensaje, { quoted: msg })
-
     } catch (e) {
-      console.error("Error en el comando play:", e)
-      
-      // Mensaje de diagnóstico amigable en el chat en caso de que YouTube aplique restricciones de IP
-      if (e.message.includes('403') || e.message.includes('Sign in')) {
-        await msg.reply("《✧》 YouTube ha bloqueado temporalmente la IP del servidor. Intenta de nuevo en unos minutos.")
-      } else {
-        await msg.reply("《✧》 Ocurrió un error local al procesar el audio.")
-      }
+      console.error(e)
+      await msg.reply("《✧》 Ocurrió un error inesperado al procesar la solicitud.")
     }
   }
 }
