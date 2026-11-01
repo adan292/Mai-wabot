@@ -6,7 +6,6 @@ export default {
   command: ["play", "mp3", "ytmp3", "ytaudio", "playaudio"],
   category: "downloader",
   run: async ({ msg, sock, args }) => {
-
     try {
       if (!args || !args[0]) {
         return msg.reply("《✧》Por favor, menciona el nombre o URL del video que deseas descargar")
@@ -36,47 +35,52 @@ export default {
       await sock.sendMessage(msg.chat, { image: thumbBuffer, caption }, { quoted: msg })
 
       let audioUrl = null
+      const api = global.api || {}
 
-      // --- INTENTO 1: Tu API configurada ---
+      // --- INTENTO 1: Tu API ---
       try {
-        if (typeof api !== 'undefined' && api.url) {
-          const dlEndpoint = `${api.url}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${api.key}`
+        if (api?.url && api?.key) {
+          const dlEndpoint = `${api.url.replace(/\/+$/, "")}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${api.key}`
           const resDl = await fetch(dlEndpoint).then(r => r.json())
-          if (resDl?.status && resDl.data?.dl) {
-            audioUrl = resDl.data.dl
-          }
+          audioUrl = resDl?.data?.dl || resDl?.result?.dl || resDl?.dl
+          console.log("[play] api principal:", audioUrl ? "ok" : "falló")
         }
       } catch (e) {
-        console.log("Tu API principal falló, intentando servidor espejo...")
+        console.log("[play] API principal falló:", e.message)
       }
 
-      // --- INTENTO 2: Servidor Espejo Público (Si el primero falló) ---
+      // --- INTENTO 2: API Espejo (arreglada) ---
       if (!audioUrl) {
         try {
-          // Usando una API alternativa pública y estable de YouTube a MP3
-          const mirrorRes = await fetch(`https://vreden.web.id{encodeURIComponent(url)}`).then(r => r.json())
-          if (mirrorRes?.status === 200 || mirrorRes?.result?.download?.url) {
-            audioUrl = mirrorRes.result?.download?.url || mirrorRes.data?.url
-          }
+          // vreden arreglada
+          const mirrorRes = await fetch(`https://vreden.web.id/api/ytmp3?url=${encodeURIComponent(url)}`).then(r => r.json())
+          audioUrl = mirrorRes?.result?.download?.url || mirrorRes?.data?.url || mirrorRes?.result?.dl
+          console.log("[play] espejo vreden:", audioUrl ? "ok" : "falló")
         } catch (e) {
-          console.log("El servidor espejo también falló.")
+          console.log("[play] Espejo falló:", e.message)
         }
       }
 
-      // --- VERIFICACIÓN FINAL ---
+      // --- INTENTO 3: Otro espejo público ---
+      if (!audioUrl) {
+        try {
+          const res = await fetch(`https://api.agatz.xyz/api/ytmp3?url=${encodeURIComponent(url)}`).then(r => r.json())
+          audioUrl = res?.data?.downloadUrl || res?.data?.url
+        } catch {}
+      }
+
       if (!audioUrl) {
         return msg.reply("《✧》 No se pudo descargar el *audio* de ningún servidor, intenta más tarde.")
       }
 
-      // Envío del mensaje final optimizado
-      const mensaje = {
+      // FIX: mandar como audio/mpeg y ptt: false para que sea música
+      await sock.sendMessage(msg.chat, {
         audio: { url: audioUrl },
-        mimetype: 'audio/mp4', 
-        fileName: `${title}.mp3`,
-        ptt: true
-      }
+        mimetype: 'audio/mpeg',
+        ptt: false,
+        fileName: `${title}.mp3`
+      }, { quoted: msg })
 
-      await sock.sendMessage(msg.chat, mensaje, { quoted: msg })
     } catch (e) {
       console.error(e)
       await msg.reply("《✧》 Ocurrió un error inesperado al procesar la solicitud.")
