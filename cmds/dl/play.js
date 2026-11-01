@@ -1,89 +1,131 @@
+import db from "#db"
 import ytsearch from "yt-search"
-import { getBuffer } from "#serialize"
-import fetch from "node-fetch"
+import sharp from "sharp"
+import axios from "axios"
+import { lang } from "#langs"
+
+async function fetchBuffer(url) {
+  const res = await axios.get(url, { responseType: "arraybuffer", timeout: 60000 })
+  return Buffer.from(res.data)
+}
+
+function formatSize(mb) {
+  if (mb >= 1024) return `${(mb / 1024).toFixed(2)} GB`
+  return `${mb.toFixed(2)} MB`
+}
+
+// FIX: filtro menos estricto, el tuyo rechazaba audios buenos
+function isValidAudio(buf) {
+  if (!buf || buf.length < 1000) return false
+  const str = buf.slice(0, 500).toString().toLowerCase()
+  if (str.includes('<html') || str.includes('<!doctype')) return false
+  return true
+}
 
 export default {
   command: ["play", "mp3", "ytmp3", "ytaudio", "playaudio"],
   category: "downloader",
-  run: async ({ msg, sock, args }) => {
+  run: async ({ msg, sock, args, command, usedPrefix }) => {
+    const t = await lang(msg.sender)
     try {
-      if (!args || !args[0]) {
-        return msg.reply("《✧》Por favor, menciona el nombre o URL del video que deseas descargar")
-      }
+      if (!args[0]) return msg.reply(t.downloader.pNoInput())
+
+      const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net'
+      const settings = await db.getSettings(botId) || {}
+      const botOfc = global?.sock?.user?.id?.split(':')[0] + '@s.whatsapp.net' || ''
+      const isOficialBot = botId === botOfc
+      const isModBot = Number(settings.botmod) === 1
+      const isPremiumBot = Number(settings.botprem) === 1
+      const maxSize = isOficialBot ? 5 * 1024 : isModBot ? 3 * 1024 : isPremiumBot ? 2 * 1024 : 100
+
+      // FIX 1: definir api
+      const api = global.api || globalThis.api
+      if (!api?.url || !api?.key) return msg.reply("API no configurada")
 
       const text = args.join(" ")
       const searchResult = await ytsearch(text)
       if (!searchResult.videos || !searchResult.videos.length) {
-        return msg.reply("《✧》 No se encontró información del video.")
+        return msg.reply(t.downloader.pNoInfo())
       }
 
       const video = searchResult.videos[0]
-      const { title, author, timestamp: duration, views, url, image } = video
+      const { author, timestamp: duration, views, url, image, seconds } = video
+      const title = String(video.title || "audio")
       const vistas = (views || 0).toLocaleString()
       const canal = author?.name || author || "Desconocido"
-      const thumbBuffer = await getBuffer(image)
 
-      const caption = `【　✿　】 _\`୨୧  Download\` ───── *${title}*_
+      const estimatedMB = ((seconds || 0) * 128000) / 8 / (1024 * 1024)
+      if (estimatedMB > maxSize) {
+        return msg.reply(t.downloader.dlLimitExceededAprox(formatSize(estimatedMB), formatSize(maxSize)))
+      }
 
-> _✐ \`Canal\` ── ${canal}_
-> _ⴵ \`Duración\` ── ${duration || ''}_
-> _✰ \`Vistas\` ── ${vistas}_
-> _🜸 \`Enlace\` ── ${url}_
-
-> _──  ִ    ۟  *¡Enviando audio, por favor espera!*_`
+      const thumbBuffer = await fetchBuffer(image)
+      const caption = t.downloader.pCaption(title, canal, duration || "", vistas, url)
 
       await sock.sendMessage(msg.chat, { image: thumbBuffer, caption }, { quoted: msg })
 
-      let audioUrl = null
-      const api = global.api || {}
+      let audioBuffer = null
+      let audioTitle = title
+      const baseUrl = api.url.replace(/\/+$/, "")
 
-      // --- INTENTO 1: Tu API ---
+      const intentos = [
+        { name: "v1", url: `${baseUrl}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
+        { name: "v2", url: `${baseUrl}/dl/ytmp3v2?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
+        { name: "v3", url: `${baseUrl}/dl/ytmp3v3?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl }
+      ]
+
+      for (const it of intentos) {
+        if (audioBuffer) break
+        try {
+          const res = await axios.get(it.url, { timeout: 20000 })
+          const dlUrl = it.pick(res.data)
+          if (!dlUrl) continue
+          const buf = await fetchBuffer(dlUrl)
+          if (!isValidAudio(buf)) { console.log(`[play] ${it.name} no-audio`); continue }
+          audioBuffer = buf
+          audioTitle = String(res.data?.data?.title || res.data?.title || title)
+        } catch (e) { console.log(`[play] ${it.name} falló: ${e.message}`) }
+      }
+
+      if (!audioBuffer) {
+        try {
+          const resV4 = await axios.get(
+            `${baseUrl}/dl/ytmp3v4?url=${encodeURIComponent(url)}&key=${api.key}`,
+            { responseType: "arraybuffer", timeout: 30000 }
+          )
+          const buf = Buffer.from(resV4.data)
+          if (isValidAudio(buf)) audioBuffer = buf
+        } catch (e) {}
+      }
+
+      if (!audioBuffer) return msg.reply(t.downloader.pNoDownload())
+
+      const sizeMB = audioBuffer.length / (1024 * 1024)
+      if (sizeMB > maxSize) {
+        return msg.reply(t.downloader.dlLimitExceeded(formatSize(sizeMB), formatSize(maxSize)))
+      }
+
+      const safeTitle = audioTitle.replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60) || "audio"
+      let thumbBuffer2
       try {
-        if (api?.url && api?.key) {
-          const dlEndpoint = `${api.url.replace(/\/+$/, "")}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${api.key}`
-          const resDl = await fetch(dlEndpoint).then(r => r.json())
-          audioUrl = resDl?.data?.dl || resDl?.result?.dl || resDl?.dl
-          console.log("[play] api principal:", audioUrl ? "ok" : "falló")
-        }
-      } catch (e) {
-        console.log("[play] API principal falló:", e.message)
+        thumbBuffer2 = await sharp(thumbBuffer).resize(300, 300).jpeg({ quality: 80 }).toBuffer()
+      } catch { thumbBuffer2 = thumbBuffer }
+
+      const isAudioNormal = command === "playaudio" || command === "ytaudio"
+
+      if (isAudioNormal || sizeMB < 10) {
+        await sock.sendMessage(msg.chat, {
+          audio: audioBuffer, mimetype: "audio/mpeg", ptt: false
+        }, { quoted: msg })
+      } else {
+        await sock.sendMessage(msg.chat, {
+          document: audioBuffer, mimetype: "audio/mpeg",
+          fileName: `${safeTitle}.mp3`, jpegThumbnail: thumbBuffer2
+        }, { quoted: msg })
       }
-
-      // --- INTENTO 2: API Espejo (arreglada) ---
-      if (!audioUrl) {
-        try {
-          // vreden arreglada
-          const mirrorRes = await fetch(`https://vreden.web.id/api/ytmp3?url=${encodeURIComponent(url)}`).then(r => r.json())
-          audioUrl = mirrorRes?.result?.download?.url || mirrorRes?.data?.url || mirrorRes?.result?.dl
-          console.log("[play] espejo vreden:", audioUrl ? "ok" : "falló")
-        } catch (e) {
-          console.log("[play] Espejo falló:", e.message)
-        }
-      }
-
-      // --- INTENTO 3: Otro espejo público ---
-      if (!audioUrl) {
-        try {
-          const res = await fetch(`https://api.agatz.xyz/api/ytmp3?url=${encodeURIComponent(url)}`).then(r => r.json())
-          audioUrl = res?.data?.downloadUrl || res?.data?.url
-        } catch {}
-      }
-
-      if (!audioUrl) {
-        return msg.reply("《✧》 No se pudo descargar el *audio* de ningún servidor, intenta más tarde.")
-      }
-
-      // FIX: mandar como audio/mpeg y ptt: false para que sea música
-      await sock.sendMessage(msg.chat, {
-        audio: { url: audioUrl },
-        mimetype: 'audio/mpeg',
-        ptt: false,
-        fileName: `${title}.mp3`
-      }, { quoted: msg })
-
     } catch (e) {
       console.error(e)
-      await msg.reply("《✧》 Ocurrió un error inesperado al procesar la solicitud.")
+      await msg.reply(t.downloader.dlError(usedPrefix))
     }
   }
 }
