@@ -1,136 +1,128 @@
-import db from "#db"
 import ytsearch from "yt-search"
-import sharp from "sharp"
-import axios from "axios"
-import { lang } from "#langs"
+import fetch from "node-fetch"
 
-async function fetchBuffer(url) {
-  const res = await axios.get(url, { responseType: "arraybuffer", timeout: 60000 })
-  return Buffer.from(res.data)
-}
-
-function formatSize(mb) {
-  if (mb >= 1024) return `${(mb / 1024).toFixed(2)} GB`
-  return `${mb.toFixed(2)} MB`
-}
-
-function isValidAudio(buf) {
-  if (!buf || buf.length < 1000) return false
-  const head = buf.slice(0, 300).toString().toLowerCase()
-  if (head.includes('<html') || head.includes('<!doctype') || head.includes('{"error"')) return false
-  return true
+// Si tu base tiene getBuffer en #serialize úsalo, si no usa este
+let getBuffer
+try {
+  const mod = await import("#serialize")
+  getBuffer = mod.getBuffer
+} catch {
+  getBuffer = async (url) => {
+    const res = await fetch(url)
+    return Buffer.from(await res.arrayBuffer())
+  }
 }
 
 export default {
   command: ["play", "mp3", "ytmp3", "ytaudio", "playaudio"],
   category: "downloader",
-  run: async ({ msg, sock, args, command, usedPrefix }) => {
-    const t = await lang(msg.sender)
+  desc: "Descarga audio de YouTube",
+  run: async ({ msg, sock, args }) => {
     try {
-      if (!args[0]) return msg.reply(t.downloader.pNoInput())
-
-      const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net'
-      const settings = await db.getSettings(botId) || {}
-      const botOfc = global?.sock?.user?.id?.split(':')[0] + '@s.whatsapp.net' || ''
-      const isOficialBot = botId === botOfc
-      const isModBot = Number(settings.botmod) === 1
-      const isPremiumBot = Number(settings.botprem) === 1
-      const maxSize = isOficialBot ? 5 * 1024 : isModBot ? 3 * 1024 : isPremiumBot ? 2 * 1024 : 100
-
-      // FIX: definir api correctamente
-      const api = global.api || globalThis.api || { url: "", key: "" }
-      if (!api.url || !api.key) {
-        return msg.reply(t.downloader.pNoInput() + "\n\nAPI no configurada")
+      if (!args[0]) {
+        return msg.reply("《✧》Por favor, menciona el nombre o URL del video que deseas descargar")
       }
 
       const text = args.join(" ")
+      await sock.sendMessage(msg.chat, { react: { text: '🕒', key: msg.key } })
+
       const searchResult = await ytsearch(text)
-      if (!searchResult.videos || !searchResult.videos.length) {
-        return msg.reply(t.downloader.pNoInfo())
+      if (!searchResult.videos?.length) {
+        return msg.reply("《✧》 No se encontró información del video.")
       }
 
       const video = searchResult.videos[0]
-      const { author, timestamp: duration, views, url, image, seconds } = video
-      const title = String(video.title || "audio")
+      const { title, author, timestamp: duration, views, url, image } = video
       const vistas = (views || 0).toLocaleString()
       const canal = author?.name || author || "Desconocido"
 
-      const estimatedMB = ((seconds || 0) * 128000) / 8 / (1024 * 1024)
-      if (estimatedMB > maxSize) {
-        return msg.reply(t.downloader.dlLimitExceededAprox(formatSize(estimatedMB), formatSize(maxSize)))
+      let thumbBuffer
+      try { thumbBuffer = await getBuffer(image) } catch { thumbBuffer = null }
+
+      const caption = `【　✿　】 _\`୨୧  Download\` ───── *${title}*_
+
+> _✐ \`Canal\` ── ${canal}_
+> _ⴵ \`Duración\` ── ${duration || ''}_
+> _✰ \`Vistas\` ── ${vistas}_
+> _🜸 \`Enlace\` ── ${url}_
+
+> _──  ִ    ۟  *¡Enviando audio, por favor espera!*_`
+
+      if (thumbBuffer) {
+        await sock.sendMessage(msg.chat, { image: thumbBuffer, caption }, { quoted: msg })
+      } else {
+        await msg.reply(caption)
       }
 
-      const thumbBuffer = await fetchBuffer(image)
-      const caption = t.downloader.pCaption(title, canal, duration || "", vistas, url)
-
-      await sock.sendMessage(msg.chat, { image: thumbBuffer, caption }, { quoted: msg })
-
-      let audioBuffer = null
-      let audioTitle = title
-      const baseUrl = api.url.replace(/\/+$/, "")
-
-      const intentos = [
-        { name: "v1", url: `${baseUrl}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
-        { name: "v2", url: `${baseUrl}/dl/ytmp3v2?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
-        { name: "v3", url: `${baseUrl}/dl/ytmp3v3?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl }
+      // --- SISTEMA DE DESCARGA ARREGLADO ---
+      const APIS = [
+        // Tu API principal
+        {
+          name: 'AlyaCore',
+          url: `https://api.alyacore.xyz/dl/ytmp3?url=${encodeURIComponent(url)}`,
+          extractor: (json) => json?.data?.dl || json?.result?.dl || json?.dl || json?.data?.download_url
+        },
+        // Fallbacks por si falla
+        {
+          name: 'ZenzzXD',
+          url: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`,
+          extractor: (json) => json?.data?.download_url || json?.download_url
+        },
+        {
+          name: 'Vreden',
+          url: `https://api.vreden.my.id/api/v1/download/youtube/audio?url=${encodeURIComponent(url)}&quality=128`,
+          extractor: (json) => json?.result?.download?.url
+        }
       ]
 
-      for (const it of intentos) {
-        if (audioBuffer) break
-        try {
-          const res = await axios.get(it.url, { timeout: 25000 })
-          const dlUrl = it.pick(res.data)
-          if (!dlUrl) continue
-          const buf = await fetchBuffer(dlUrl)
-          if (!isValidAudio(buf)) { console.log(`[play] ${it.name} no-audio`); continue }
-          audioBuffer = buf
-          audioTitle = String(res.data?.data?.title || res.data?.title || title)
-        } catch (e) { console.log(`[play] ${it.name} falló: ${e.message}`) }
-      }
+      let dlUrl = null
+      let apiUsada = ''
 
-      if (!audioBuffer) {
+      for (const api of APIS) {
         try {
-          const resV4 = await axios.get(
-            `${baseUrl}/dl/ytmp3v4?url=${encodeURIComponent(url)}&key=${api.key}`,
-            { responseType: "arraybuffer", timeout: 40000 }
-          )
-          const buf = Buffer.from(resV4.data)
-          if (isValidAudio(buf)) {
-            audioBuffer = buf
+          console.log(`[PLAY] Probando ${api.name}: ${api.url}`)
+          const res = await fetch(api.url, { 
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            signal: AbortSignal.timeout(15000)
+          }).then(r => r.json())
+          
+          const link = api.extractor(res)
+          if (link && link.startsWith('http')) {
+            dlUrl = link
+            apiUsada = api.name
+            break
           }
-        } catch (e) { console.log(`[play] v4 falló: ${e.message}`) }
+        } catch (e) {
+          console.log(`[PLAY] ${api.name} falló: ${e.message}`)
+        }
       }
 
-      if (!audioBuffer) return msg.reply(t.downloader.pNoDownload())
-
-      const sizeMB = audioBuffer.length / (1024 * 1024)
-      if (sizeMB > maxSize) {
-        return msg.reply(t.downloader.dlLimitExceeded(formatSize(sizeMB), formatSize(maxSize)))
+      if (!dlUrl) {
+        return msg.reply("《✧》 No se pudo descargar el *audio* de ningún servidor, intenta más tarde.")
       }
 
-      const safeTitle = audioTitle.replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60) || "audio"
-      let thumbBuffer2
-      try {
-        thumbBuffer2 = await sharp(thumbBuffer).resize(300, 300).jpeg({ quality: 80 }).toBuffer()
-      } catch {
-        thumbBuffer2 = thumbBuffer
-      }
+      // FIX CLAVE: descargar buffer con headers
+      const audioRes = await fetch(dlUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+      if (!audioRes.ok) throw new Error(`Servidor ${apiUsada} devolvió ${audioRes.status}`)
       
-      const isAudioNormal = command === "playaudio" || command === "ytaudio"
+      const audioBuffer = Buffer.from(await audioRes.arrayBuffer())
+      if (audioBuffer.length < 1000) throw new Error('Archivo vacío')
 
-      if (isAudioNormal || sizeMB < 10) {
-        await sock.sendMessage(msg.chat, {
-          audio: audioBuffer, mimetype: "audio/mpeg", ptt: false
-        }, { quoted: msg })
-      } else {
-        await sock.sendMessage(msg.chat, {
-          document: audioBuffer, mimetype: "audio/mpeg",
-          fileName: `${safeTitle}.mp3`, jpegThumbnail: thumbBuffer2
-        }, { quoted: msg })
-      }
+      console.log(`[PLAY] Audio descargado de ${apiUsada}: ${audioBuffer.length} bytes`)
+
+      await sock.sendMessage(msg.chat, {
+        audio: audioBuffer,
+        mimetype: 'audio/mpeg',
+        fileName: `${title}.mp3`,
+        ptt: false // ponlo en true si lo quieres como nota de voz
+      }, { quoted: msg })
+
+      await sock.sendMessage(msg.chat, { react: { text: '✔️', key: msg.key } })
+
     } catch (e) {
-      console.error(e)
-      await msg.reply(t.downloader.dlError(usedPrefix))
+      console.error('[PLAY ERROR]', e)
+      await sock.sendMessage(msg.chat, { react: { text: '✖️', key: msg.key } })
+      await msg.reply(`《✧》Error: ${e.message}\n\nAvisa a adánzx7`)
     }
   }
 }
