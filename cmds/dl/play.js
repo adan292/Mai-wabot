@@ -14,11 +14,11 @@ function formatSize(mb) {
   return `${mb.toFixed(2)} MB`
 }
 
-function isRealMp3(buf) {
-  if (!buf || buf.length < 4) return false
-  if (buf[0] === 0x49 && buf[1] === 0x44 && buf[2] === 0x33) return true
-  if (buf[0] === 0xFF && (buf[1] & 0xE0) === 0xE0) return true
-  return false
+function isValidAudio(buf) {
+  if (!buf || buf.length < 1000) return false
+  const head = buf.slice(0, 300).toString().toLowerCase()
+  if (head.includes('<html') || head.includes('<!doctype') || head.includes('{"error"')) return false
+  return true
 }
 
 export default {
@@ -36,6 +36,12 @@ export default {
       const isModBot = Number(settings.botmod) === 1
       const isPremiumBot = Number(settings.botprem) === 1
       const maxSize = isOficialBot ? 5 * 1024 : isModBot ? 3 * 1024 : isPremiumBot ? 2 * 1024 : 100
+
+      // FIX: definir api correctamente
+      const api = global.api || globalThis.api || { url: "", key: "" }
+      if (!api.url || !api.key) {
+        return msg.reply(t.downloader.pNoInput() + "\n\nAPI no configurada")
+      }
 
       const text = args.join(" ")
       const searchResult = await ytsearch(text)
@@ -61,36 +67,38 @@ export default {
 
       let audioBuffer = null
       let audioTitle = title
+      const baseUrl = api.url.replace(/\/+$/, "")
 
       const intentos = [
-        { name: "v1", url: `${api.url}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl },
-        { name: "v2", url: `${api.url}/dl/ytmp3v2?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl },
-        { name: "v3", url: `${api.url}/dl/ytmp3v3?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl }
+        { name: "v1", url: `${baseUrl}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
+        { name: "v2", url: `${baseUrl}/dl/ytmp3v2?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
+        { name: "v3", url: `${baseUrl}/dl/ytmp3v3?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl }
       ]
 
       for (const it of intentos) {
         if (audioBuffer) break
         try {
-          const res = await axios.get(it.url, { timeout: 20000 })
+          const res = await axios.get(it.url, { timeout: 25000 })
           const dlUrl = it.pick(res.data)
           if (!dlUrl) continue
           const buf = await fetchBuffer(dlUrl)
-          if (!isRealMp3(buf)) { console.log(`[play] ${it.name} no-MP3 (${buf.length} bytes)`); continue }
+          if (!isValidAudio(buf)) { console.log(`[play] ${it.name} no-audio`); continue }
           audioBuffer = buf
-          audioTitle = String(res.data?.data?.title || res.data?.title || res.data?.data?.metadata?.title || title)
+          audioTitle = String(res.data?.data?.title || res.data?.title || title)
         } catch (e) { console.log(`[play] ${it.name} falló: ${e.message}`) }
       }
 
       if (!audioBuffer) {
         try {
           const resV4 = await axios.get(
-            `${api.url}/dl/ytmp3v4?url=${encodeURIComponent(url)}&key=${api.key}`,
-            { responseType: "arraybuffer", timeout: 30000 }
+            `${baseUrl}/dl/ytmp3v4?url=${encodeURIComponent(url)}&key=${api.key}`,
+            { responseType: "arraybuffer", timeout: 40000 }
           )
           const buf = Buffer.from(resV4.data)
-          if (isRealMp3(buf)) audioBuffer = buf
-          else console.log(`[play] v4 no-MP3 (${buf.length} bytes)`)
-        } catch (e) {}
+          if (isValidAudio(buf)) {
+            audioBuffer = buf
+          }
+        } catch (e) { console.log(`[play] v4 falló: ${e.message}`) }
       }
 
       if (!audioBuffer) return msg.reply(t.downloader.pNoDownload())
@@ -100,11 +108,17 @@ export default {
         return msg.reply(t.downloader.dlLimitExceeded(formatSize(sizeMB), formatSize(maxSize)))
       }
 
-      const safeTitle = audioTitle.replace(/[\\/:*?"<>|]/g, "").trim() || "audio"
-      const thumbBuffer2 = await sharp(thumbBuffer).resize(300, 300).jpeg({ quality: 80 }).toBuffer()
+      const safeTitle = audioTitle.replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60) || "audio"
+      let thumbBuffer2
+      try {
+        thumbBuffer2 = await sharp(thumbBuffer).resize(300, 300).jpeg({ quality: 80 }).toBuffer()
+      } catch {
+        thumbBuffer2 = thumbBuffer
+      }
+      
       const isAudioNormal = command === "playaudio" || command === "ytaudio"
 
-      if (isAudioNormal || sizeMB < 5) {
+      if (isAudioNormal || sizeMB < 10) {
         await sock.sendMessage(msg.chat, {
           audio: audioBuffer, mimetype: "audio/mpeg", ptt: false
         }, { quoted: msg })
