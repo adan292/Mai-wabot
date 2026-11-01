@@ -2,7 +2,6 @@ import db from "#db"
 import ytsearch from "yt-search"
 import sharp from "sharp"
 import axios from "axios"
-import { lang } from "#langs"
 
 async function fetchBuffer(url) {
   const res = await axios.get(url, { responseType: "arraybuffer", timeout: 60000 })
@@ -14,7 +13,6 @@ function formatSize(mb) {
   return `${mb.toFixed(2)} MB`
 }
 
-// FIX: filtro menos estricto, el tuyo rechazaba audios buenos
 function isValidAudio(buf) {
   if (!buf || buf.length < 1000) return false
   const str = buf.slice(0, 500).toString().toLowerCase()
@@ -26,9 +24,10 @@ export default {
   command: ["play", "mp3", "ytmp3", "ytaudio", "playaudio"],
   category: "downloader",
   run: async ({ msg, sock, args, command, usedPrefix }) => {
-    const t = await lang(msg.sender)
     try {
-      if (!args[0]) return msg.reply(t.downloader.pNoInput())
+      if (!args[0]) {
+        return msg.reply("《✧》 Por favor, menciona el nombre o URL del video que deseas descargar.")
+      }
 
       const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net'
       const settings = await db.getSettings(botId) || {}
@@ -38,14 +37,15 @@ export default {
       const isPremiumBot = Number(settings.botprem) === 1
       const maxSize = isOficialBot ? 5 * 1024 : isModBot ? 3 * 1024 : isPremiumBot ? 2 * 1024 : 100
 
-      // FIX 1: definir api
       const api = global.api || globalThis.api
-      if (!api?.url || !api?.key) return msg.reply("API no configurada")
+      if (!api?.url || !api?.key) {
+        return msg.reply("《✧》 La API de descarga no está configurada.")
+      }
 
       const text = args.join(" ")
       const searchResult = await ytsearch(text)
-      if (!searchResult.videos || !searchResult.videos.length) {
-        return msg.reply(t.downloader.pNoInfo())
+      if (!searchResult?.videos?.length) {
+        return msg.reply("《✧》 No se encontró información del video.")
       }
 
       const video = searchResult.videos[0]
@@ -56,17 +56,24 @@ export default {
 
       const estimatedMB = ((seconds || 0) * 128000) / 8 / (1024 * 1024)
       if (estimatedMB > maxSize) {
-        return msg.reply(t.downloader.dlLimitExceededAprox(formatSize(estimatedMB), formatSize(maxSize)))
+        return msg.reply(`《✧》 El archivo solicitado pesa aproximadamente *${formatSize(estimatedMB)}* y supera el límite permitido para este Socket *(${formatSize(maxSize)})*.`)
       }
 
       const thumbBuffer = await fetchBuffer(image)
-      const caption = t.downloader.pCaption(title, canal, duration || "", vistas, url)
+      const caption = `【　✿　】 _\`୨୧  Download\` ───── *${title}*_
+
+> _✐ \`Canal\` ── ${canal}_
+> _ⴵ \`Duración\` ── ${duration || ""}_
+> _✰ \`Vistas\` ── ${vistas}_
+> _🜸 \`Enlace\` ── ${url}_
+
+> _──  ִ    ۟  *¡Enviando audio, por favor espera!*_`
 
       await sock.sendMessage(msg.chat, { image: thumbBuffer, caption }, { quoted: msg })
 
       let audioBuffer = null
       let audioTitle = title
-      const baseUrl = api.url.replace(/\/+$/, "")
+      const baseUrl = String(api.url).replace(/\/+$/, "")
 
       const intentos = [
         { name: "v1", url: `${baseUrl}/dl/ytmp3?url=${encodeURIComponent(url)}&key=${api.key}`, pick: d => d?.data?.dl || d?.result?.dl || d?.dl },
@@ -81,10 +88,15 @@ export default {
           const dlUrl = it.pick(res.data)
           if (!dlUrl) continue
           const buf = await fetchBuffer(dlUrl)
-          if (!isValidAudio(buf)) { console.log(`[play] ${it.name} no-audio`); continue }
+          if (!isValidAudio(buf)) {
+            console.log(`[play] ${it.name} no-audio`)
+            continue
+          }
           audioBuffer = buf
           audioTitle = String(res.data?.data?.title || res.data?.title || title)
-        } catch (e) { console.log(`[play] ${it.name} falló: ${e.message}`) }
+        } catch (e) {
+          console.log(`[play] ${it.name} falló: ${e.message}`)
+        }
       }
 
       if (!audioBuffer) {
@@ -95,37 +107,47 @@ export default {
           )
           const buf = Buffer.from(resV4.data)
           if (isValidAudio(buf)) audioBuffer = buf
-        } catch (e) {}
+        } catch (e) {
+          console.log(`[play] v4 falló: ${e.message}`)
+        }
       }
 
-      if (!audioBuffer) return msg.reply(t.downloader.pNoDownload())
+      if (!audioBuffer) {
+        return msg.reply("《✧》 No se pudo descargar el *audio*, intenta más tarde.")
+      }
 
       const sizeMB = audioBuffer.length / (1024 * 1024)
       if (sizeMB > maxSize) {
-        return msg.reply(t.downloader.dlLimitExceeded(formatSize(sizeMB), formatSize(maxSize)))
+        return msg.reply(`《✧》 El archivo solicitado pesa *${formatSize(sizeMB)}* y supera el límite permitido para este Socket *(${formatSize(maxSize)})*.`)
       }
 
-      const safeTitle = audioTitle.replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60) || "audio"
+      const safeTitle = String(audioTitle).replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 60) || "audio"
       let thumbBuffer2
       try {
         thumbBuffer2 = await sharp(thumbBuffer).resize(300, 300).jpeg({ quality: 80 }).toBuffer()
-      } catch { thumbBuffer2 = thumbBuffer }
+      } catch {
+        thumbBuffer2 = thumbBuffer
+      }
 
       const isAudioNormal = command === "playaudio" || command === "ytaudio"
 
       if (isAudioNormal || sizeMB < 10) {
         await sock.sendMessage(msg.chat, {
-          audio: audioBuffer, mimetype: "audio/mpeg", ptt: false
+          audio: audioBuffer,
+          mimetype: "audio/mpeg",
+          ptt: false
         }, { quoted: msg })
       } else {
         await sock.sendMessage(msg.chat, {
-          document: audioBuffer, mimetype: "audio/mpeg",
-          fileName: `${safeTitle}.mp3`, jpegThumbnail: thumbBuffer2
+          document: audioBuffer,
+          mimetype: "audio/mpeg",
+          fileName: `${safeTitle}.mp3`,
+          jpegThumbnail: thumbBuffer2
         }, { quoted: msg })
       }
     } catch (e) {
       console.error(e)
-      await msg.reply(t.downloader.dlError(usedPrefix))
+      await msg.reply(`《✧》 Ocurrió un error al procesar el audio. Usa ${usedPrefix || '#'}help`)
     }
   }
 }
