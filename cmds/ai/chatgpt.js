@@ -11,8 +11,8 @@ export default {
       return msg.reply(`Ay... ¿no vas a decir nada? \n\nEscribe algo, Senpai. *— Mai*`)
     }
 
-    const API_BASE = global.api?.url || "https://api.alyacore.xyz"
-    const API_KEY = global.api?.key || "adanzx7"
+    const API_BASE = global.api?.url || "https://api.stellarwa.xyz"
+    const API_KEY = global.api?.key || "api-k3jR4"
 
     const maiPrompt = `
 Actúa 100% como Mai Sakurajima de Seishun Buta Yarou (Bunny Girl Senpai).
