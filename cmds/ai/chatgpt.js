@@ -1,69 +1,89 @@
-import fetch from 'node-fetch';
+import db from "#db"
+import axios from "axios"
+import { lang } from "#langs"
 
 export default {
-  command: ['ia', 'chatgpt', 'mai'],
-  category: 'ai',
-  desc: 'Mai Sakurajima AI - by adánzx7',
+  command: ["mai", "ai", "chatgpt", "gpt"],
+  category: "ai",
   run: async ({ msg, sock, args }) => {
+    try {
+      const text = args.join(" ")
+      if (!text) {
+        return msg.reply("¿Y qué quieres que te diga si ni siquiera escribes nada? Tonto... dime algo, Senpai.")
+      }
 
-    const text = args.join(' ')
-    if (!text) {
-      return msg.reply(`Ay... ¿no vas a decir nada? \n\nEscribe algo, Senpai. *— Mai*`)
-    }
+      await sock.sendPresenceUpdate('composing', msg.chat)
 
-    const API_BASE = global.api?.url || "https://api.alyacore.xyz"
-    const API_KEY = global.api?.key || "adanzx7"
-
-    const maiPrompt = `
-Actúa 100% como Mai Sakurajima de Seishun Buta Yarou (Bunny Girl Senpai).
+      const promptMai = `Actúa 100% como Mai Sakurajima de Seishun Buta Yarou (Bunny Girl Senpai).
 Reglas importantes:
 - Habla 100% en español latino natural. PROHIBIDO usar palabras japonesas como "mou", "ara", "etto". Usa "ay" en lugar de "mou".
 - Personalidad: tsundere suave, lista, sarcástica pero que se preocupa.
 - Le habla a su Senpai (el usuario). Le dice "Senpai", "tonto".
 - Es madura, elegante, no cringe. Frases cortas.
 - Si le preguntan si es IA, dice: "¿IA? Soy Mai Sakurajima, ¿acaso no me ves? Tonto..."
-- Nunca rompas el personaje. Nunca digas que eres ChatGPT.
+- Nunca rompas el personaje. Nunca digas que eres ChatGPT, Meta AI.
 - Usa pocos emojis.
+- Responde siempre en máximo 3-4 líneas.
 
 Usuario (Senpai) dice: "${text}"
-Responde como Mai:
-`.trim()
+Responde como Mai:`
 
-    try {
-      const { key } = await sock.sendMessage(
-        msg.chat,
-        { text: 'Mai está pensando... *suspiro* 🙄' },
-        { quoted: msg },
-      )
+      let respuesta = null
+      const api = global.api || {}
 
-      let response = null
-
+      // --- INTENTO 1: Tu API ---
       try {
-        const apiUrl = `${API_BASE}/ai/chatgpt?text=${encodeURIComponent(maiPrompt)}&key=${API_KEY}`
-        const res = await fetch(apiUrl, { signal: AbortSignal.timeout(15000) })
-        const json = await res.json()
-        response = json.result || json.data || json.response
+        if (api.url && api.key) {
+          const baseUrl = api.url.replace(/\/+$/, "")
+          const url1 = `${baseUrl}/ai/mai?text=${encodeURIComponent(text)}&key=${api.key}`
+          const res1 = await axios.get(url1, { timeout: 15000 })
+          respuesta = res1.data?.data?.result || res1.data?.result || res1.data?.data
+          console.log("[mai] api propia:", respuesta ? "ok" : "falló")
+        }
       } catch (e) {
-        console.log('[MAI API FALLÓ]', e.message)
+        console.log("[mai] api propia falló:", e.message)
       }
 
-      if (!response) {
-        const fallbackUrl = `https://api.zenzxz.my.id/ai/chatgpt?text=${encodeURIComponent(maiPrompt)}`
-        const res2 = await fetch(fallbackUrl).then(r => r.json())
-        response = res2.result || res2.data
+      // --- INTENTO 2: API pública estable 1 ---
+      if (!respuesta) {
+        try {
+          const res2 = await axios.get(`https://api.siputzx.my.id/api/ai/gpt3`, {
+            params: {
+              prompt: promptMai,
+              content: text
+            },
+            timeout: 20000
+          })
+          respuesta = res2.data?.data || res2.data?.result
+        } catch (e) {
+          console.log("[mai] siputzx falló:", e.message)
+        }
       }
 
-      if (!response) {
-        return sock.sendMessage(msg.chat, { text: 'Ay... mi cerebro está en huelga. Intenta más tarde, Senpai.', edit: key })
+      // --- INTENTO 3: API pública estable 2 ---
+      if (!respuesta) {
+        try {
+          const res3 = await axios.get(`https://api.davidcyriltech.my.id/ai/chatbot`, {
+            params: {
+              text: promptMai
+            },
+            timeout: 20000
+          })
+          respuesta = res3.data?.result || res3.data?.response
+        } catch (e) {
+          console.log("[mai] david falló:", e.message)
+        }
       }
 
-      const finalText = `*Mai Sakurajima* 🐰\n\n${response.trim()}\n\n> _No vayas a malinterpretar, no es como si quisiera hablar contigo o algo así, tonto..._`
+      if (!respuesta) {
+        return msg.reply("Ay... mi cabeza se quedó en blanco un segundo, Senpai. Intenta de nuevo, ¿sí? Tonto.")
+      }
 
-      await sock.sendMessage(msg.chat, { text: finalText, edit: key })
+      await msg.reply(String(respuesta).trim())
 
-    } catch (error) {
-      console.error('[MAI ERROR]', error)
-      await msg.reply(`Ay... tuve un error, Senpai.\n${error.message}`)
+    } catch (e) {
+      console.error("[mai] error:", e)
+      await msg.reply("Tch... hubo un error, Senpai. No es que me preocupe por ti ni nada, pero inténtalo de nuevo.")
     }
-  },
-};
+  }
+}
