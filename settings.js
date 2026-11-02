@@ -11,7 +11,7 @@ Para acceder a la API en otro host, debes crear una cuenta en api.stellarwa.xyz 
 
 global.api = {
   url: 'https://api.stellarwa.xyz',
-  key: 'api-9yzVU' 
+  key: 'api-k3jR4' 
 }
 
 global.msgglobal = '《✧》 Se encontró un error en este comando, intenta mas tarde.\n> ✿ Si el error persiste, reportalo con el comando *#report*.'
