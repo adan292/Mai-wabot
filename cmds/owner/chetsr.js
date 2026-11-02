@@ -1,33 +1,30 @@
 export default {
   command: ['chetsr'],
   category: 'owner',
-  description: 'Otorga 5,000,000,000 monedas del bot a un usuario',
+  description: 'Otorga una cantidad específica de monedas al autor del comando',
   isOwner: true,
   run: async ({ msg, sock, args, usedPrefix }) => {
     const db = (await import('#db')).default;
 
-    const target = args[0]?.trim();
-    if (!target) {
+    const amount = Number(args[0]?.replace(/[^0-9]/g, '') || 0);
+    if (!args[0] || !Number.isFinite(amount) || amount <= 0) {
       return sock.sendMessage(msg.chat, {
-        text: `《✧》 Debes mencionar el número o @usuario.
-Ejemplo: ${usedPrefix}chetsr 573001234567`
+        text: `《✧》 Debes indicar la cantidad a sumar.
+Ejemplo: ${usedPrefix}chetsr 5000000`
       }, { quoted: msg });
     }
 
-    const jid = target.includes('@') ? target : `${target.replace(/[^0-9]/g, '')}@s.whatsapp.net`;
-
     try {
-      const user = await db.getUser(jid);
+      const user = await db.getUser(msg.sender);
       const current = user?.coins || 0;
-      const newTotal = current + 5000000000;
+      const newTotal = current + amount;
 
-      await db.updateUser(jid, 'coins', newTotal);
+      await db.updateUser(msg.sender, 'coins', newTotal);
 
       await sock.sendMessage(msg.chat, {
-        text: `《✧》 *Cheto money activado.*
+        text: `《✧》 *Dinero añadido correctamente.*
 
-✅ Usuario: ${jid}
-💰 Monedas agregadas: *5,000,000,000*
+💰 Cantidad: *${amount.toLocaleString()}*
 💵 Total actual: *${newTotal.toLocaleString()}*`
       }, { quoted: msg });
     } catch (e) {
