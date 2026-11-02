@@ -3,7 +3,7 @@ import axios from "axios"
 import { lang } from "#langs"
 
 export default {
-  command: ["mai", "ai", "chatgpt", "gpt"],
+  command: ["chatgpt", "gpt", "mai", "ai"],
   category: "ai",
   run: async ({ msg, sock, args }) => {
     try {
@@ -35,13 +35,20 @@ Responde como Mai:`
       try {
         if (api.url && api.key) {
           const baseUrl = api.url.replace(/\/+$/, "")
-          const url1 = `${baseUrl}/ai/mai?text=${encodeURIComponent(text)}&key=${api.key}`
-          const res1 = await axios.get(url1, { timeout: 15000 })
-          respuesta = res1.data?.data?.result || res1.data?.result || res1.data?.data
-          console.log("[mai] api propia:", respuesta ? "ok" : "falló")
+          const endpoints = [
+            `${baseUrl}/ai/mai?text=${encodeURIComponent(text)}&key=${api.key}`,
+            `${baseUrl}/ai/chatgpt?text=${encodeURIComponent(text)}&key=${api.key}`
+          ]
+          for (const url of endpoints) {
+            if (respuesta) break
+            try {
+              const res1 = await axios.get(url, { timeout: 15000 })
+              respuesta = res1.data?.data?.result || res1.data?.result || res1.data?.data || res1.data?.response
+            } catch {}
+          }
         }
       } catch (e) {
-        console.log("[mai] api propia falló:", e.message)
+        console.log("[chatgpt] api propia falló:", e.message)
       }
 
       // --- INTENTO 2: API pública estable 1 ---
@@ -56,7 +63,7 @@ Responde como Mai:`
           })
           respuesta = res2.data?.data || res2.data?.result
         } catch (e) {
-          console.log("[mai] siputzx falló:", e.message)
+          console.log("[chatgpt] siputzx falló:", e.message)
         }
       }
 
@@ -71,7 +78,7 @@ Responde como Mai:`
           })
           respuesta = res3.data?.result || res3.data?.response
         } catch (e) {
-          console.log("[mai] david falló:", e.message)
+          console.log("[chatgpt] david falló:", e.message)
         }
       }
 
@@ -82,7 +89,7 @@ Responde como Mai:`
       await msg.reply(String(respuesta).trim())
 
     } catch (e) {
-      console.error("[mai] error:", e)
+      console.error("[chatgpt] error:", e)
       await msg.reply("Tch... hubo un error, Senpai. No es que me preocupe por ti ni nada, pero inténtalo de nuevo.")
     }
   }
