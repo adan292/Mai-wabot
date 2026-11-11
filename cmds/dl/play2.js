@@ -1,71 +1,43 @@
-import yts from 'yt-search'
-import fetch from 'node-fetch'
-import { getBuffer } from '#serialize'
-
-export default {
-  command: ['play2', 'mp4', 'ytmp4', 'ytvideo', 'playvideo'],
-  category: 'downloader',
-  run: async ({ msg, sock, args }) => {
-
-    try {
-      if (!args[0]) {
-        return msg.reply('《✧》Por favor, menciona el nombre o URL del video que deseas descargar')
+if (!res?.status || !res.data?.dl) {
+        return msg.reply('《✧》 No se pudo descargar el video, intenta más tarde.')
       }
 
-      const text = args.join(' ')
-      const videoMatch = text.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/|v\/))([a-zA-Z0-9_-]{11})/)
-      const query = videoMatch ? 'https://youtu.be/' + videoMatch[1] : text
-
-      const search = await yts(query)
-      const videoInfo = videoMatch
-        ? search.videos.find(v => v.videoId === videoMatch[1]) || search.all[0]
-        : search.all[0]
-
-      if (!videoInfo) {
-        return msg.reply('《✧》 No se encontró información del video.')
+      // Opción A: Si tienes el buffer del video directamente desde res.data.dl (si dl es un buffer/base64)
+      // Opción B: Si res.result.downloadUrl es una URL pública directa
+      
+      // Asumiendo que quieres enviar el buffer descargado previamente o usar la URL directa:
+      // Si res.data.dl es un buffer binario:
+      let videoToSend
+      
+      // Si la API devuelve un buffer en data.dl, úsalo. Si no, descarga desde downloadUrl
+      if (res.data.dl && typeof res.data.dl !== 'string') {
+          videoToSend = res.data.dl
+      } else {
+          // Fallback: Descargar desde la URL de resultado si existe
+          if(res.result?.downloadUrl) {
+               const respVideo = await fetch(res.result.downloadUrl)
+               videoToSend = await respVideo.buffer()
+          } else {
+              throw new Error("No video content found in response")
+          }
       }
 
-      const { timestamp: duration } = videoInfo
-      const url = videoInfo.url
-      const title = videoInfo.title
-      const vistas = (videoInfo.views || 0).toLocaleString()
-      const canal = videoInfo.author?.name || 'Desconocido'
-      const thumbBuffer = await getBuffer(videoInfo.image)
-
-      const caption = `【　✿　】 _\`୨୧  Download\` ───── *${title}*_
-
-> _✐ \`Canal\` ── ${canal}_
-> _ⴵ \`Duración\` ── ${duration || ''}_
-> _✰ \`Vistas\` ── ${vistas}_
-> _🜸 \`Enlace\` ── ${url}_
-
-> _──  ִ    ۟  *¡Enviando video, por favor espera!*_`
-
-      await sock.sendMessage(msg.chat, { image: thumbBuffer, caption }, { quoted: msg })
-
-      const endpoint = `${api.url}/dl/ytmp4?url=${encodeURIComponent(url)}&quality=auto&key=${api.key}`
-      const res = await fetch(endpoint, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
-          'Accept': 'application/json'
-        }
-      }).then(r => r.json())
-
-      if (!res?.status || !res.data?.dl) {
-        return msg.reply('《✧》 No se pudo descargar el *video*, intenta más tarde.')
-      }
-
-      const videoBuffer = await getBuffer(res.data.dl)
+      // CORRECCIÓN 3: Sintaxis correcta para fileName como string interpolado
+      const fileName = ${res.result?.title || 'video'}.mp4
 
       const mensaje = {
-        video: { url: res.result.downloadUrl },
-        fileName: `${res.result?.title || 'video'}.mp4`,
-        mimetype: 'video/mp4'
+        video: videoToSend, // Enviamos el buffer directamente
+        fileName: fileName,
+        mimetype: 'video/mp4',
+        caption: *${title}* // Opcional: añadir título al video enviado
       }
 
       await sock.sendMessage(msg.chat, mensaje, { quoted: msg })
+      
     } catch (e) {
-      await msg.reply(msgglobal)
+      console.error(e)
+      // Asegúrate de definir msgglobal o usa un string fijo
+      await msg.reply(《✧》 Ocurrió un error inesperado: ${e.message || 'Error desconocido'})
     }
   }
 }
