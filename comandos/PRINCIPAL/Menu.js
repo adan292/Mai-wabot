@@ -99,26 +99,45 @@ async function pickWorkingImage(urls = []) {
 const READ_MORE = String.fromCharCode(8206).repeat(4000);
 
 const IMAGENES = [
-  'https://i.ibb.co/ZzDLjShT/6-Pdo7j-Jq-fond-decran-Gojo-Sotaru-49.jpg',
-  'https://i.ibb.co/gstbvMx/wp11845569.jpg',
-  'https://i.ibb.co/TB83V4cy/thumbbig-1334857.jpg',
-  'https://i.ibb.co/VWS1C2Jj/gojo-satoru-holding-his-face-iyrluirbzvncz77a.jpg',
-  'https://i.ibb.co/whMxn3nF/Rty-Ri9-Rc-fond-decran-Gojo-Sotaru-63.jpg',
-  'https://i.ibb.co/fdbrgzL0/15227.png',
-  'https://i.ibb.co/k2SG88q1/8x-Ot-Gb6d-fond-decran-Gojo-Sotaru-10.jpg',
-  'https://i.ibb.co/yBM2Wtpb/blue-pantone-gojo-satoru-h0033v4edcsam2oh.jpg',
-  'https://i.ibb.co/mC7YVhFB/wp12768651.png',
-  'https://i.ibb.co/Tqt5zJH4/i5r8-Yxs-X-fond-decran-Gojo-Sotaru-86.jpg',
-  'https://i.ibb.co/7tBQ76xm/8atm-A40e-fond-decran-Gojo-Sotaru-61.jpg',
-  'https://i.ibb.co/3H4LG6M/J89n-Ccx9-fond-decran-Gojo-Sotaru-60.jpg',
-  'https://i.ibb.co/cKVSfbhm/9r0c-T9-TF-fond-decran-Gojo-Sotaru-36.jpg',
-  'https://i.ibb.co/PvvRJ4Mz/RUAC325575-CQ7-ABKCXBSKR3-Q5-Q.jpg',
-  'https://i.ibb.co/5D2Jb6G/170112-anime-gojo-satoru-satoru-gojo-jujutsu-kaisen-arte-animado-x750.jpg',
-  'https://i.ibb.co/0pjjK2Bn/IMG-20260512-WA0010.jpg',
-  'https://i.ibb.co/V052PRsB/IMG-20260512-WA0005.jpg',
-  'https://i.ibb.co/v6KG7n4X/IMG-20260512-WA0001.jpg',
-  'https://i.ibb.co/zhcv1W2Q/IMG-20260512-WA0004.jpg',
-  'https://i.ibb.co/hFVLh9f1/IMG-20260512-WA0003.jpg'
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+
+  'https://h.uguu.se/qMpwFGuBfqgH.jpeg'
 ];
 
 const CATEGORIA_INFO = {
