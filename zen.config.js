@@ -15,7 +15,7 @@ export const ZenConfig = {
   ownerNumbers: [], // Configurá acá los números autorizados.
   botPhoneNumber: '639559603767', // Vacío para pedir el número al iniciar.
   publicBotMode: true,
-  newsletterJid: '120363403631501323@newsletter',
+  newsletterJid: ' 00297051@s.whatsapp.net',
   newsletterName: 'Canal MaiwaBot ✦',
   channelUrl: 'https://whatsapp.com/channel/0029Vb7OVMwJf05bKntqZx1G',
   
