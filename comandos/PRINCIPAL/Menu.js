@@ -96,6 +96,14 @@ async function pickWorkingImage(urls = []) {
   return undefined;
 }
 
+// Enviar la imagen en un mensaje normal: sendButtons no renderiza de forma
+// consistente la propiedad `image` en todas las versiones de WhatsApp/Baileys.
+async function sendMenuBanner(ctx, image, caption, quoted) {
+  if (!image) return false;
+  await ctx.sock.sendMessage(ctx.chat, { image, caption }, { quoted });
+  return true;
+}
+
 const READ_MORE = String.fromCharCode(8206).repeat(4000);
 
 const IMAGENES = [
@@ -344,10 +352,10 @@ async function drawCategoryMenu(ctx, key) {
   const randomImage = await pickWorkingImage(IMAGENES);
   const menuText = lines.join('\n');
 
+  await sendMenuBanner(ctx, randomImage, `『 ${info.nombre} 』`, menuQuoted);
   await ctx.sock.sendButtons(ctx.chat, {
     text: menuText,
     footer: ZenConfig.botName,
-    image: randomImage,
     quoted: menuQuoted,
     buttons: [
       {
@@ -417,10 +425,10 @@ async function sendMenuWithPicker(ctx) {
       button_title: 'Abrir menú'
     }
   });
+  await sendMenuBanner(ctx, randomImage, `『 ✦ ${ZenConfig.botName} ✦ 』`, menuQuoted);
   await ctx.sock.sendButtons(ctx.chat, {
     text: fullMenuText,
     footer: ZenConfig.botName,
-    image: randomImage,
     quoted: menuQuoted,
     buttons,
     messageParamsJson
@@ -448,10 +456,10 @@ export default new ZenCommand('menu')
       const completeText = await getCompleteCommandsText(ctx);
       const randomImage = await pickWorkingImage(IMAGENES);
 
+      await sendMenuBanner(ctx, randomImage, `『 ✦ ${ZenConfig.botName} · MENÚ COMPLETO ✦ 』`, menuQuoted);
       return ctx.sock.sendButtons(ctx.chat, {
         text: completeText,
         footer: ZenConfig.botName,
-        image: randomImage,
         quoted: menuQuoted,
         buttons: [
           {
