@@ -9,15 +9,15 @@ process.env.TMP = GLOBAL_TMP;
 
 export const ZenConfig = {
   prefix: '.',
-  botName: 'ZenBot',
-  ownerName: 'Axelix09',
-  ownerInstagram: 'axelix09',
+  botName: 'MaiwaBot',
+  ownerName: 'adanzx7',
+  ownerInstagram: 'mai sakurajima',
   ownerNumbers: [], // Configurá acá los números autorizados.
-  botPhoneNumber: '', // Vacío para pedir el número al iniciar.
+  botPhoneNumber: '639559603767', // Vacío para pedir el número al iniciar.
   publicBotMode: true,
   newsletterJid: '120363403631501323@newsletter',
-  newsletterName: 'Canal ZenBot ✦',
-  channelUrl: 'https://whatsapp.com/channel/0029Vb6OR9O2v1IvoXO5oT2c',
+  newsletterName: 'Canal MaiwaBot ✦',
+  channelUrl: 'https://whatsapp.com/channel/0029Vb7OVMwJf05bKntqZx1G',
   
   subbotLimit: 15,
 
@@ -30,7 +30,7 @@ export const ZenConfig = {
   devMode: true,
 
   currencies: {
-    zencoins: { name: 'ZenCoins', emoji: '⌬' },
+    zencoins: { name: 'MaiCoins', emoji: '⌬' },
     kogen: { name: 'Kōgen', emoji: '✦' },
     lux: { name: 'Lux', emoji: '✵' }
   },
