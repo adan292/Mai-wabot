@@ -10,7 +10,7 @@ import { pipeline } from 'stream/promises';
 import fg from 'fg-senna';
 import ytSearch from 'yt-search';
 
-const HIKARI_API = 'https://hikariapi.skyultraweb.com';
+const ALYA_API = 'https://api.alyacore.xyz';
 const SAMU_API = 'https://api.samu330.com';
 const DL_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
