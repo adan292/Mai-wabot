@@ -13,7 +13,7 @@ async function fetchRepo(owner, repo) {
   const headers = {
     'Accept': 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
-    'User-Agent': `${ZenConfig.botName || 'ZenBot'}-gitclone`
+    'User-Agent': `${ZenConfig.botName || 'Maibot'}-gitclone`
   };
   if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
 
