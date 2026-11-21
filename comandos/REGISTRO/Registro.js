@@ -139,7 +139,7 @@ export function parseRegistrationInput(args = []) {
 }
 
 const registrationGuide = (prefix, reason = '') => [
-  `『 🤖 』 *ASISTENTE DE REGISTRO DE ZENBOT*`,
+  `『 🤖 』 *ASISTENTE DE REGISTRO DE MAIBOT*`,
   ``,
   reason ? `⚠️ ${reason}\n` : '',
   `Para crear tu cuenta envía tus datos en uno de estos formatos:`,
