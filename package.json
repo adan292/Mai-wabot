@@ -1,16 +1,16 @@
 {
-  "name": "zenbot",
+  "name": "Maibot",
   "version": "11.1.0",
   "description": "Bot de WhatsApp multi-dispositivo con juegos, economia, descargas y comandos de grupo, construido sobre zyrix",
   "type": "module",
   "main": "zen.js",
   "author": {
-    "name": "Axelix09",
-    "url": "https://whatsapp.com/channel/0029Vb6OR9O2v1IvoXO5oT2c"
+    "name": "Adánzx7",
+    "url": "https://whatsapp.com/channel/0029Vb7OVMwJf05bKntqZx1G"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Axelix09/ZenBot.git"
+    "url": "https://github.com/adan292/Mai-wabot"
   },
   "homepage": "https://github.com/Axelix09/ZenBot#readme",
   "license": "GPL-3.0-only",
