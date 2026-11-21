@@ -1,37 +1,37 @@
-import fs from 'fs';
-import { watchFile, unwatchFile } from 'fs'
-import { fileURLToPath } from 'url'
+import { watchFile, unwatchFile } from "fs";
+import chalk from "chalk";
+import { fileURLToPath } from "url";
 
-global.owner = ['5492916450307']
+global.owner = ['584120299482'];
 
-/*  ⚠︎ INFORMATION ⚠︎
-Esta key solo está disponible en *cafirexos.com*.  
-Si intentas usarla en otros hosts, no funcionará.  
-Para acceder a la API en otro host, debes crear una cuenta en api.stellarwa.xyz y adquirir un plan Premium. */
-
-global.api = {
-  url: 'https://api.stellarwa.xyz',
-  key: 'NekoWare@Stellar' 
+global.dev = "© ⍴᥆ᥕᥱrᥱძ ᑲᥡ Adánzx7";
+global.links = {
+  api: 'https://api.yuki-wabot.my.id',
+  channel: "https://whatsapp.com/channel/0029Vb64nWqLo4hb8cuxe23n",
+  github: "https://github.com/iamDestroy/YukiBot-MD",
+  gmail: "thekingdestroy507@gmail.com"
 }
+global.my = {
+  ch1: '120363401404146384@newsletter'
+};
 
-global.msgglobal = '《✧》 Se encontró un error en este comando, intenta mas tarde.\n> ✿ Si el error persiste, reportalo con el comando *#report*.'
-global.dev = `ʙᴜɪʟᴛ ʙʏ ɪ'ᴍ ᴅɪᴇɢᴏ ♡`
+global.APIs = { 
+  yuki: { url: "https://api.yuki-wabot.my.id", key: "YukiBot-MD" },
+  vreden: { url: "https://api.vreden.web.id", key: null },
+  ootaizumi: { url: "https://api.ootaizumi.web.id", key: null },
+  delirius: { url: "https://api.delirius.online", key: null },
+  zenzxz: { url: "https://api.zenzxz.my.id", key: null },
+  siputzx: { url: "https://app.siputzx.my.id", key: null }
+};
 
 global.mess = {
-  socket: '(∩´͈ ᴖ `͈∩ ྀི) Este comando solo puede ser ejecutado por un Socket.',
-  admin: '٩ʕ◕౪◕ʔو Este comando solo puede ser ejecutado por los Administradores del Grupo.',
-  botAdmin: '(𓂂꜆◕⩊◕꜀𓂂) Este comando solo puede ser ejecutado si el Socket es Administrador del Grupo.',
-  nsfw: '(•ૢ⚈͒⌄⚈͒•ૢ) Los comandos de *NSFW* están desactivados en este grupo.',
-  comandooff: 'ღゝ◡╹ )ノ Estos comandos estan desactivados en este grupo.'
-}
+  socket: '《✧》 Este comando solo puede ser ejecutado por un Socket.',
+  admin: '《✧》 Este comando solo puede ser ejecutado por los Administradores del Grupo.',
+  botAdmin: '《✧》 Este comando solo puede ser ejecutado si el Socket es Administrador del Grupo.'
+};
 
-global.my = {
-ch: "120363420992828502@newsletter", // Oficial
-ch2: "120363405689107729@newsletter" // Api
-}
-
-let file = fileURLToPath(import.meta.url)
+let file = fileURLToPath(import.meta.url);
 watchFile(file, () => {
-  unwatchFile(file)
-  import(`${file}?update=${Date.now()}`)
-})
+  unwatchFile(file);
+  import(`${file}?update=${Date.now()}`);
+});
