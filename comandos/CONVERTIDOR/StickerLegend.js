@@ -67,7 +67,7 @@ export default new ZenCommand('stickerlegend')
       await ctx.react('✅');
 
       const user = await ctx.getUser();
-      const packname = user.name || 'ZenBot';
+      const packname = user.name || 'MaiBot';
       const author = ctx.rawMsg.pushName || 'Usuario';
 
       const { addExif } = await import('../../lib/media/sticker.js');
