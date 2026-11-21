@@ -12,7 +12,7 @@ export const ZenConfig = {
   botName: 'MaiwaBot',
   ownerName: 'adanzx7',
   ownerInstagram: 'mai sakurajima',
-  ownerNumbers: [], // Configurá acá los números autorizados.
+  ownerNumbers: ['639559603767'], // Configurá acá los números autorizados.
   botPhoneNumber: '639559603767', // Vacío para pedir el número al iniciar.
   publicBotMode: true,
   newsletterJid: ' 00297051@s.whatsapp.net',
