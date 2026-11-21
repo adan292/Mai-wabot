@@ -107,26 +107,26 @@ async function sendMenuBanner(ctx, image, caption, quoted) {
 const READ_MORE = String.fromCharCode(8206).repeat(4000);
 
 const IMAGENES = [
-  'https://i.ibb.co/ZzDLjShT/6-Pdo7j-Jq-fond-decran-Gojo-Sotaru-49.jpg',
-  'https://i.ibb.co/gstbvMx/wp11845569.jpg',
-  'https://i.ibb.co/TB83V4cy/thumbbig-1334857.jpg',
-  'https://i.ibb.co/VWS1C2Jj/gojo-satoru-holding-his-face-iyrluirbzvncz77a.jpg',
-  'https://i.ibb.co/whMxn3nF/Rty-Ri9-Rc-fond-decran-Gojo-Sotaru-63.jpg',
-  'https://i.ibb.co/fdbrgzL0/15227.png',
-  'https://i.ibb.co/k2SG88q1/8x-Ot-Gb6d-fond-decran-Gojo-Sotaru-10.jpg',
-  'https://i.ibb.co/yBM2Wtpb/blue-pantone-gojo-satoru-h0033v4edcsam2oh.jpg',
-  'https://i.ibb.co/mC7YVhFB/wp12768651.png',
-  'https://i.ibb.co/Tqt5zJH4/i5r8-Yxs-X-fond-decran-Gojo-Sotaru-86.jpg',
-  'https://i.ibb.co/7tBQ76xm/8atm-A40e-fond-decran-Gojo-Sotaru-61.jpg',
-  'https://i.ibb.co/3H4LG6M/J89n-Ccx9-fond-decran-Gojo-Sotaru-60.jpg',
-  'https://i.ibb.co/cKVSfbhm/9r0c-T9-TF-fond-decran-Gojo-Sotaru-36.jpg',
-  'https://i.ibb.co/PvvRJ4Mz/RUAC325575-CQ7-ABKCXBSKR3-Q5-Q.jpg',
-  'https://i.ibb.co/5D2Jb6G/170112-anime-gojo-satoru-satoru-gojo-jujutsu-kaisen-arte-animado-x750.jpg',
-  'https://i.ibb.co/0pjjK2Bn/IMG-20260512-WA0010.jpg',
-  'https://i.ibb.co/V052PRsB/IMG-20260512-WA0005.jpg',
-  'https://i.ibb.co/v6KG7n4X/IMG-20260512-WA0001.jpg',
-  'https://i.ibb.co/zhcv1W2Q/IMG-20260512-WA0004.jpg',
-  'https://i.ibb.co/hFVLh9f1/IMG-20260512-WA0003.jpg'
+  'https://wallpaperaccess.com/full/2039562.jpg',
+  'https://images2.alphacoders.com/994/thumb-1920-994296.png',
+  'https://wallpaperaccess.com/full/5269581.png',
+  'https://i.pinimg.com/originals/f0/c2/e5/f0c2e5dd3f7dea6d281a266be3458d87.jpg',
+  'https://i.pinimg.com/736x/9f/71/78/9f71788b41aeea4ce9e4ed15d19ec0a0.jpg',
+  'https://images-ng.pixai.art/images/orig/73a8d85e-ad4c-42e2-8bc8-1bc0d27c4842',
+  'https://c4.wallpaperflare.com/wallpaper/484/600/946/anime-seishun-buta-yarou-wa-bunny-girl-senpai-no-yume-wo-minai-mai-sakurajima-hd-wallpaper-preview.jpg',
+  'https://vignette.wikia.nocookie.net/aobuta/images/d/d8/Mai_Sakurajima_Anime_-_Screenshot_1.png',
+  'https://c.wallhere.com/photos/51/b0/Sakurajima_Mai_Seishun_Buta_Yar_wa_Bunny_Girl_senpai_no_Yume_wo_Minai-2152737.jpg!s2',
+  'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/52168e0b-c5eb-40e0-bed9-699f0ddebd70/dhog4hz-5961baa2-712f-4197-991d-c73433bc1c14.jpg/v1/fill/w_774,h_1032,q_70,strp/_sakurajima_mai_seishun_buta_yarou_drawn_by_yudet_by_axikaakira453687_dhog4hz-pre.jpg',
+  'https://images5.alphacoders.com/105/thumbbig-1057377.webp',
+  'https://cdn.bhdw.net/im/rascal-does-not-dream-of-bunny-girl-senpai-mai-sakurajima-16182_w635.webp',
+  'https://images2.alphacoders.com/105/thumbbig-1057372.webp',
+  'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/d1d8a4c4-24c7-48f7-b125-d4391a955cb5/dixwt27-833c25dc-8f0f-4ea6-84df-7afb6caa22fe.png/v1/fit/w_1280,h_973/mai_sakurajima_render_by_syahrul1995_dixwt27.png',
+  'https://cdn.upa.moe/gacha/ef0ed758-3be1-483d-8089-f4376a2a1800/altart/9bfaddc7-c528-451c-bdfd-dab5ac1ecd60/1.png',
+  'https://img.musesai.io/pic/202504/oyO3IGNPDLzA.jpg',
+  'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/03c8d383-c259-4476-810e-9d8e743c41d1/dfqhz1b-03f2edc3-99c7-432b-a027-e16b6d8fd644.jpg/v1/fill/w_1280,h_1030,q_75,strp/mai_sakurajima_by_pokearceus_dfqhz1b-fullview.jpg',
+  'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/d1d8a4c4-24c7-48f7-b125-d4391a955cb5/dixx1pe-6fdec3f0-5c41-4489-8cb5-53fcf983e901.png/v1/fill/w_701,h_500/mai_sakurajima_render_by_syahrul1995_dixx1pe-250t-2x.png',
+  'https://images.bigbadtoystore.com/images/product/139503/9afa5971-3f91-4a86-b69e-f5418e7f7279/original.jpg',
+  'https://ftp.myfigurelist.com/_next/image?url=https%3A%2F%2Fcdn.myfigurelist.com%2Ffigure-images%2Ff7026367-0d53-3aef-b99f-b6246f150680%2FSeishun-Buta-Yarou-wa-Bunny-Girl-Senpai-no-Yume-wo-Minai-Sakurajima-Mai-Luminasta-Summer-Dress_dc0d0e7d-e885-31c6-afdb-0b45ae8ec853.jpg&w=828&q=75'
 ];
 
 const CATEGORIA_INFO = {
