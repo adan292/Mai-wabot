@@ -119,6 +119,7 @@ const IMAGENES = [
   'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/d1d8a4c4-24c7-48f7-b125-d4391a955cb5/dixx1pe-6fdec3f0-5c41-4489-8cb5-53fcf983e901.png/v1/fill/w_701,h_500/mai_sakurajima_render_by_syahrul1995_dixx1pe-250t-2x.png',
   'https://images.bigbadtoystore.com/images/product/139503/9afa5971-3f91-4a86-b69e-f5418e7f7279/original.jpg',
   'https://ftp.myfigurelist.com/_next/image?url=https%3A%2F%2Fcdn.myfigurelist.com%2Ffigure-images%2Ff7026367-0d53-3aef-b99f-b6246f150680%2FSeishun-Buta-Yarou-wa-Bunny-Girl-Senpai-no-Yume-wo-Minai-Sakurajima-Mai-Luminasta-Summer-Dress_dc0d0e7d-e885-31c6-afdb-0b45ae8ec853.jpg&w=828&q=75'
+
 ];
 
 const CATEGORIA_INFO = {
