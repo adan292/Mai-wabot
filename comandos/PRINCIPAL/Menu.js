@@ -100,44 +100,8 @@ const READ_MORE = String.fromCharCode(8206).repeat(4000);
 
 const IMAGENES = [
   'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
+ 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbcFYOYU8EnFkNTbiwHfqrn_tNrXTq2HbpGaq3g7vy2g1EsVK9WNhzIvY&s=10'
 
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg',
-
-  'https://h.uguu.se/qMpwFGuBfqgH.jpeg'
 ];
 
 const CATEGORIA_INFO = {
